@@ -1,0 +1,17 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+repositories {
+	mavenCentral()
+	maven {
+		url = 'http://d-maven.googlecode.com/svn/trunk/repo'
+	}
+}
+
+dependencies {
+	compile 'commons-io:commons-io:2.4'
+	compile 'junit:junit:4.11'
+	compile 'dnl.utils:j-text-utils:0.3.3'
+    //compile files('C:/Users/Jan/Downloads/j-text-utils-0.3.3.jar')
+}
+
