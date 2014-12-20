@@ -7,7 +7,7 @@ public class SettingsGradleCreator {
 	private static final String fileName = "settings.gradle";
 
 	public static void generateGradleSettingsFile(Workspace workspace) {
-		StringBuilder output = new StringBuilder("include ");
+		StringBuilder output = new StringBuilder("include" + newLine);
 		ArrayList<Project> projectList = workspace.getProjects();
 		for (Project project : projectList) {
 			output.append("\t" + "'" + project.getName() + "'," + newLine);
