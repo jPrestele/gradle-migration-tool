@@ -308,5 +308,6 @@ public class Workspace {
 		workspace.generateGradleSuprojectFiles();
 		workspace.printDependencyMatrix();
 		workspace.generateSettingsDotGradleFile();
+		System.out.println("Test for git");
 	}
 }
