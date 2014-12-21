@@ -23,6 +23,10 @@ public class FileDependency {
 		populateClasses();
 	}
 
+	public FileDependency(String filePath) throws IOException {
+		this(new File(filePath));
+	}
+
 	private void populateClasses() {
 		Enumeration<JarEntry> jarEntries = jarFile.entries();
 		while (jarEntries.hasMoreElements()) {

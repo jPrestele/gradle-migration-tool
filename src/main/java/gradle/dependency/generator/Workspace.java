@@ -115,16 +115,12 @@ public class Workspace {
 	}
 
 	public void addFileDependency(String dependency) {
-		addFileDependency(dependency, null);
+		addFileDependency(dependency, DependencyType.COMPILE);
 	}
 
 	public void addFileDependency(String dependency, DependencyType type) {
-		File file = new File(dependency);
 		try {
-			FileDependency fileDependency = new FileDependency(file);
-			if (type != null) {
-				fileDependency.setDependencyType(type);
-			}
+			FileDependency fileDependency = new FileDependency(dependency);
 			fileDependencies.add(fileDependency);
 		} catch (IOException e) {
 			System.err.println("Could not open jar : " + dependency);
@@ -311,6 +307,6 @@ public class Workspace {
 		workspace.workspaceConfigurationsFinished();
 		workspace.generateGradleSuprojectFiles();
 		workspace.printDependencyMatrix();
-		// workspace.generateSettingsDotGradleFile();
+		workspace.generateSettingsDotGradleFile();
 	}
 }
