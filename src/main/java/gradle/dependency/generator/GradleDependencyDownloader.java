@@ -41,6 +41,9 @@ public class GradleDependencyDownloader {
 		tempFile.newLine();
 	}
 
+	/*
+	 * uses gradle's mavenCentral() method
+	 */
 	public void setMavenCentralRepo() {
 		tempFile.append("repositories { mavenCentral() }");
 		tempFile.newLine();

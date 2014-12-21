@@ -21,7 +21,7 @@ public class Workspace {
 	private ArrayList<FileDependency> fileDependencies;
 	private File gradleDependendenciesCache;
 	private String repositoryUrl;
-	private boolean transitiveDependencies = false;
+	private boolean transitiveDependencies = true;
 
 	public Workspace(String workspaceRoot) {
 		this.workspaceRootFile = new File(workspaceRoot);
@@ -173,8 +173,7 @@ public class Workspace {
 	}
 
 	/*
-	 * Should only be used if gradle dependency cache location was changed and
-	 * is not in the default location
+	 * Only needs to be set if gradle cache isn't in userhome/.gradle/...
 	 */
 	public void setGradleDependencyCache(String path) {
 		gradleDependendenciesCache = new File(path);
@@ -185,7 +184,7 @@ public class Workspace {
 	}
 
 	/*
-	 * default is not transitive
+	 * default is transitive
 	 */
 	public void setTransitiveDependencies(boolean transitive) {
 		transitiveDependencies = transitive;
@@ -228,7 +227,8 @@ public class Workspace {
 
 	private void makeDependenciesTransitive() {
 		// go to projects on which current project depend. If they have
-		// duplicate dependencies remove them in currentProject
+		// the same dependencies as the parent project remove them in
+		// currentProject
 		for (Project project : projectList) {
 			ArrayList<Project> projectDependencies = project.getDependencies();
 			ArrayList<FileDependency> fileDependencies = project.getFileDependencies();
@@ -306,8 +306,7 @@ public class Workspace {
 		workspace.addGradleDependency("junit:junit:4.10", DependencyType.TESTCOMPILE);
 		workspace.workspaceConfigurationsFinished();
 		workspace.generateGradleSuprojectFiles();
-		workspace.printDependencyMatrix();
 		workspace.generateSettingsDotGradleFile();
-		System.out.println("Test for git");
+		workspace.printDependencyMatrix();
 	}
 }

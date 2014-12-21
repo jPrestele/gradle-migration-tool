@@ -6,6 +6,7 @@ public class GradleDependency {
 	private String name;
 	private String version;
 	private String jarName;
+	private DependencyType dependencyType = DependencyType.COMPILE;
 
 	/*
 	 * Gradle dependency format : "group:name:version"
@@ -34,6 +35,17 @@ public class GradleDependency {
 
 	public String getJarName() {
 		return jarName;
+	}
+
+	public DependencyType getDependencyType() {
+		return this.dependencyType;
+	}
+
+	/*
+	 * Default dependency type is COMPILE
+	 */
+	public void setDependencyType(DependencyType dependencyType) {
+		this.dependencyType = dependencyType;
 	}
 
 	private void populateGroupNameVersion() {
