@@ -17,7 +17,11 @@ public class GradleDependency {
 		jarName = name + '-' + version + ".jar";
 	}
 
-	public String getDependencyInGradleFormat() {
+	/*
+	 * Returns String of dependency definition in gradle format(
+	 * group:name:version)
+	 */
+	public String getGradleFormat() {
 		return dependencyGradleFormat;
 	}
 

@@ -9,34 +9,24 @@ public class GradleDependencyDownloader {
 	 */
 	private ArrayList<GradleDependency> dependencies;
 	private String repoUrl;
-	private WritableFile tempFile = new WritableFile(tempFolderPath + "/build.gradle");
-	private static String tempFolderPath = "gradleDependencyGeneratorTempFolder";
 
-	/*
-	 * If no repository is specified MavenCentral is used
-	 */
-	public GradleDependencyDownloader(String repositoryUrl, GradleDependency... fileDependencies) {
+	private static final String tempFolderPath = "gradleDependencyGeneratorTempFolder";
+	private static final WritableFile tempFile = new WritableFile(tempFolderPath + "/build.gradle");
+
+	public GradleDependencyDownloader(String repositoryUrl) {
 		dependencies = new ArrayList<GradleDependency>();
 		repoUrl = repositoryUrl;
-		for (GradleDependency dep : fileDependencies) {
-			dependencies.add(dep);
-		}
-		activateGradleJavaPlugin();
-		if (repoUrl == null) {
-			setMavenCentralRepo();
-		} else
-			addRepo();
 	}
 
-	/*
-	 * Constructor which should be used if MavenCentral repository should be
-	 * used to donwload dependencies
-	 */
-	public GradleDependencyDownloader(GradleDependency... fileDependencies) {
-		this(null, fileDependencies);
+	public void addDependency(GradleDependency dependency) {
+		dependencies.add(dependency);
 	}
 
-	public void addRepo() {
+	public void addDependencies(ArrayList<GradleDependency> dependencies) {
+		this.dependencies.addAll(dependencies);
+	}
+
+	private void writeRepo() {
 		tempFile.append("repositories { maven { url '" + repoUrl + "' } }");
 		tempFile.newLine();
 	}
@@ -44,28 +34,29 @@ public class GradleDependencyDownloader {
 	/*
 	 * uses gradle's mavenCentral() method
 	 */
-	public void setMavenCentralRepo() {
-		tempFile.append("repositories { mavenCentral() }");
-		tempFile.newLine();
-	}
+	// public void setMavenCentralRepo() {
+	// tempFile.append("repositories { mavenCentral() }");
+	// tempFile.newLine();
+	// }
 
-	public void generateDependencyEntries() {
+	private void generateDependencyEntries() {
 		tempFile.append("dependencies { ");
 		for (GradleDependency dependency : dependencies) {
-			tempFile.append("compile '" + dependency.getDependencyInGradleFormat() + "'");
+			tempFile.append("compile '" + dependency.getGradleFormat() + "'");
 			tempFile.newLine();
 		}
 		tempFile.append("}");
 	}
 
 	public void downloadDependencies() {
-		writeGradleDependencyFile();
+		writeGradleJavaPlugin();
+		writeRepo();
+		writeGradleDependencies();
 		GradleCall gradleCall = new GradleCall(tempFolderPath, "dependencies");
 		gradleCall.execGradleCommand();
 		removeTempFiles();
 	}
 
-	// TODO: maybe remove check
 	private void removeTempFiles() {
 		tempFile.delete();
 		File folder = new File(tempFolderPath);
@@ -76,20 +67,24 @@ public class GradleDependencyDownloader {
 	 * add Java plugin to Gradle file so compile time configuration can be used
 	 * for dependency
 	 */
-	private void activateGradleJavaPlugin() {
+	private void writeGradleJavaPlugin() {
 		tempFile.append("apply plugin: 'java'");
 		tempFile.newLine();
 	}
 
-	private void writeGradleDependencyFile() {
+	private void writeGradleDependencies() {
 		tempFile.getParentFile().mkdir();
 		generateDependencyEntries();
 		tempFile.write();
 	}
 
+	// put in test
 	public static void main(String[] args) {
 		GradleDependency dep1 = new GradleDependency("org.apache.httpcomponents:httpclient:4.3.5");
-		GradleDependencyDownloader downloader = new GradleDependencyDownloader(dep1);
+		GradleDependency dep2 = new GradleDependency("junit:junit:4.10");
+		String repo = "http://repo1.maven.org/maven2/";
+		GradleDependencyDownloader downloader = new GradleDependencyDownloader(repo);
+		downloader.addDependency(dep2);
 		downloader.downloadDependencies();
 	}
 }

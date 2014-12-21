@@ -17,16 +17,16 @@ import dnl.utils.text.table.TextTable;
 public class Workspace {
 	private ArrayList<Project> projectList;
 	private File workspaceRootFile;
-	private HashMap<GradleDependency, DependencyType> gradleDependencies;
+	private ArrayList<GradleDependency> gradleDependencies;
 	private ArrayList<FileDependency> fileDependencies;
 	private File gradleDependendenciesCache;
-	private String repositoryUrl;
+	private String repositoryUrl = "http://repo1.maven.org/maven2/";
 	private boolean transitiveDependencies = true;
 
 	public Workspace(String workspaceRoot) {
 		this.workspaceRootFile = new File(workspaceRoot);
 		projectList = new ArrayList<Project>();
-		gradleDependencies = new HashMap<GradleDependency, DependencyType>();
+		gradleDependencies = new ArrayList<GradleDependency>();
 		fileDependencies = new ArrayList<FileDependency>();
 		String userHomeDir = System.getProperty("user.home");
 		gradleDependendenciesCache = new File(userHomeDir + "\\.gradle\\caches\\modules-2\\files-2.1");
@@ -141,7 +141,9 @@ public class Workspace {
 	}
 
 	public void addGradleDependency(String dependency, DependencyType type) {
-		gradleDependencies.put(new GradleDependency(dependency), type);
+		GradleDependency gradleDependency = new GradleDependency(dependency);
+		gradleDependency.setDependencyType(type);
+		this.gradleDependencies.add(gradleDependency);
 	}
 
 	public void generateGradleSuprojectFiles() {
@@ -190,36 +192,25 @@ public class Workspace {
 		transitiveDependencies = transitive;
 	}
 
-	/*
-	 * repo should be zero(maven central is used) or one string
-	 */
 	private void downloadDependencies() {
-		GradleDependency[] dependencyArray = gradleDependencies.keySet().toArray(new GradleDependency[gradleDependencies.size()]);
-		if (repositoryUrl != null) {
-			new GradleDependencyDownloader(repositoryUrl, dependencyArray).downloadDependencies();
-		}
-		new GradleDependencyDownloader(dependencyArray).downloadDependencies();
+		GradleDependencyDownloader downloader = new GradleDependencyDownloader(repositoryUrl);
+		downloader.addDependencies(gradleDependencies);
+		downloader.downloadDependencies();
 	}
 
 	// after Gradle downloaded Dependencies
 	private void addGradleDependenciesToFileDependencies() {
-		Iterator<Entry<GradleDependency, DependencyType>> iterator = gradleDependencies.entrySet().iterator();
-		while (iterator.hasNext()) {
-			Entry<GradleDependency, DependencyType> entry = iterator.next();
-			GradleDependency gradleDependency = entry.getKey();
+		for (GradleDependency gradleDependency : gradleDependencies) {
 			try {
 				File jar = FileUtils.listFiles(gradleDependendenciesCache, FileFilterUtils.nameFileFilter(gradleDependency.getJarName()), TrueFileFilter.INSTANCE).iterator().next();
 				FileDependency fileDependencyObj = new FileDependency(jar);
-				fileDependencyObj.setGradleFormatDependency(gradleDependency.getDependencyInGradleFormat());
-				DependencyType dependencyType = entry.getValue();
-				if (dependencyType != null) {
-					fileDependencyObj.setDependencyType(dependencyType);
-				}
+				fileDependencyObj.setGradleFormatDependency(gradleDependency.getGradleFormat());
+				fileDependencyObj.setDependencyType(gradleDependency.getDependencyType());
 				fileDependencies.add(fileDependencyObj);
 			} catch (NoSuchElementException e) {
-				System.err.println("Could not download dependency " + gradleDependency.getDependencyInGradleFormat());
+				System.err.println("Could not download dependency " + gradleDependency.getGradleFormat());
 			} catch (IOException e) {
-				System.err.println("Could not open dependency " + gradleDependency.getDependencyInGradleFormat());
+				System.err.println("Could not open dependency " + gradleDependency.getGradleFormat());
 			}
 		}
 
