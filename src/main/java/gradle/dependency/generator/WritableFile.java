@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+// TODO: use stringbuilder
 public class WritableFile extends File {
 	private static final long serialVersionUID = 1L;
 	private String fileOutput = "";

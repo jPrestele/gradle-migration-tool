@@ -3,9 +3,7 @@ package gradle.dependency.generator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.io.FileUtils;
@@ -23,8 +21,8 @@ public class Workspace {
 	private String repositoryUrl = "http://repo1.maven.org/maven2/";
 	private boolean transitiveDependencies = true;
 
-	public Workspace(String workspaceRoot) {
-		this.workspaceRootFile = new File(workspaceRoot);
+	public Workspace(String workspaceRootPath) {
+		this.workspaceRootFile = new File(workspaceRootPath);
 		projectList = new ArrayList<Project>();
 		gradleDependencies = new ArrayList<GradleDependency>();
 		fileDependencies = new ArrayList<FileDependency>();
@@ -132,12 +130,12 @@ public class Workspace {
 	 */
 	public void addGradleDependencies(String... dependencies) {
 		for (String dependency : dependencies) {
-			addGradleDependency(dependency, null);
+			addGradleDependency(dependency, DependencyType.COMPILE);
 		}
 	}
 
 	public void addGradleDependency(String dependency) {
-		addGradleDependency(dependency, null);
+		addGradleDependency(dependency, DependencyType.COMPILE);
 	}
 
 	public void addGradleDependency(String dependency, DependencyType type) {
@@ -244,6 +242,7 @@ public class Workspace {
 				projectList.add(project);
 			}
 		}
+		System.out.println(projectList.size() + " projects found");
 	}
 
 	private void populateProjectDependencies() {
@@ -278,6 +277,7 @@ public class Workspace {
 	}
 
 	private void removeProjects(String... removeProjects) {
+		int sizeBeforeRemoval = projectList.size();
 		Iterator<Project> projectIterator = projectList.iterator();
 		while (projectIterator.hasNext()) {
 			String projectName = projectIterator.next().getName();
@@ -287,6 +287,9 @@ public class Workspace {
 				}
 			}
 		}
+		int sizeAfterRemoval = projectList.size();
+		int numberProjectsRemoved = sizeBeforeRemoval - sizeAfterRemoval;
+		System.out.println(numberProjectsRemoved + " projects removed");
 	}
 
 	public static void main(String[] args) throws InterruptedException {
