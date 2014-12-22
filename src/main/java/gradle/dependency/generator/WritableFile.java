@@ -19,8 +19,9 @@ public class WritableFile extends File {
 		super(file.getAbsolutePath());
 	}
 
-	public void append(String string) {
+	public WritableFile append(String string) {
 		fileOutput += string;
+		return this;
 	}
 
 	public void newLine() {

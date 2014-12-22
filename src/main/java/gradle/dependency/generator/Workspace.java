@@ -16,7 +16,7 @@ public class Workspace {
 	private ArrayList<Project> projectList;
 	private File workspaceRootFile;
 	private ArrayList<GradleDependency> gradleDependencies;
-	private ArrayList<FileDependency> fileDependencies;
+	private ArrayList<FileDependency> workrspaceDependencies;
 	private File gradleDependendenciesCache;
 	private String repositoryUrl = "http://repo1.maven.org/maven2/";
 	private boolean transitiveDependencies = true;
@@ -25,7 +25,7 @@ public class Workspace {
 		this.workspaceRootFile = new File(workspaceRootPath);
 		projectList = new ArrayList<Project>();
 		gradleDependencies = new ArrayList<GradleDependency>();
-		fileDependencies = new ArrayList<FileDependency>();
+		workrspaceDependencies = new ArrayList<FileDependency>();
 		String userHomeDir = System.getProperty("user.home");
 		gradleDependendenciesCache = new File(userHomeDir + "\\.gradle\\caches\\modules-2\\files-2.1");
 		populateProjects();
@@ -39,13 +39,13 @@ public class Workspace {
 		return workspaceRootFile;
 	}
 
-	public ArrayList<FileDependency> getFileDependencies() {
-		return fileDependencies;
+	public ArrayList<FileDependency> getWorkspaceDependencies() {
+		return workrspaceDependencies;
 	}
 
 	public void printDependencyMatrix() {
 		int verticalSize = projectList.size();
-		int horizontalSize = verticalSize + 1 + fileDependencies.size();
+		int horizontalSize = verticalSize + 1 + workrspaceDependencies.size();
 		Object[][] data = new Object[verticalSize][horizontalSize];
 		for (int i = 0; i < verticalSize; i++) {
 			for (int j = 0; j < horizontalSize; j++) {
@@ -59,7 +59,7 @@ public class Workspace {
 					}
 				} else {
 					// add file dependencies
-					if (projectList.get(i).getFileDependencies().contains(fileDependencies.get(j - projectList.size() - 1))) {
+					if (projectList.get(i).getFileDependencies().contains(workrspaceDependencies.get(j - projectList.size() - 1))) {
 						data[i][j] = new Integer(1);
 					}
 				}
@@ -75,7 +75,7 @@ public class Workspace {
 				columnNames[i] = projectList.get(i - 1).getName();
 			} else {
 				// add file names
-				columnNames[i] = fileDependencies.get(i - projectList.size() - 1).getName();
+				columnNames[i] = workrspaceDependencies.get(i - projectList.size() - 1).getName();
 			}
 		}
 		TextTable tt = new TextTable(columnNames, data);
@@ -84,7 +84,7 @@ public class Workspace {
 
 	public void workspaceConfigurationsFinished() {
 		downloadDependencies();
-		addGradleDependenciesToFileDependencies();
+		addGradleDependenciesToWorkspaceDependencies();
 		populateProjectDependencies();
 		populateProjectFileDependencies();
 		if (transitiveDependencies) {
@@ -119,7 +119,7 @@ public class Workspace {
 	public void addFileDependency(String dependency, DependencyType type) {
 		try {
 			FileDependency fileDependency = new FileDependency(dependency);
-			fileDependencies.add(fileDependency);
+			workrspaceDependencies.add(fileDependency);
 		} catch (IOException e) {
 			System.err.println("Could not open jar : " + dependency);
 		}
@@ -142,34 +142,6 @@ public class Workspace {
 		GradleDependency gradleDependency = new GradleDependency(dependency);
 		gradleDependency.setDependencyType(type);
 		this.gradleDependencies.add(gradleDependency);
-	}
-
-	public void generateGradleSuprojectFiles() {
-		for (Project project : projectList) {
-			GradleFile gradleFile = new GradleFile(project.getFile());
-			// don't create build.gradle if no dependencies exist for project
-			if (project.getDependencies().isEmpty() == false || project.getFileDependencies().isEmpty() == false) {
-				String newLine = System.lineSeparator();
-				gradleFile.append("dependencies {" + newLine);
-				for (Project projectDependency : project.getDependencies()) {
-					gradleFile.append("\t" + projectDependency.getDependencyType().getType() + " project(':" + projectDependency.getName() + "')" + newLine);
-				}
-				for (FileDependency fileDependency : project.getFileDependencies()) {
-					// check if it is local dependency or remote dependency
-					if (fileDependency.isGradleDependency()) {
-						gradleFile.append("\t" + fileDependency.getDependencyType().getType() + " '" + fileDependency.getGradleFormatDependency() + "'" + newLine);
-					} else {
-						gradleFile.append("\tcompile files('" + fileDependency.getPath() + "')" + newLine);
-					}
-				}
-				gradleFile.append("}");
-			}
-			gradleFile.write();
-		}
-	}
-
-	public void generateSettingsDotGradleFile() {
-		SettingsGradleCreator.generateGradleSettingsFile(this);
 	}
 
 	/*
@@ -197,14 +169,14 @@ public class Workspace {
 	}
 
 	// after Gradle downloaded Dependencies
-	private void addGradleDependenciesToFileDependencies() {
+	private void addGradleDependenciesToWorkspaceDependencies() {
 		for (GradleDependency gradleDependency : gradleDependencies) {
 			try {
 				File jar = FileUtils.listFiles(gradleDependendenciesCache, FileFilterUtils.nameFileFilter(gradleDependency.getJarName()), TrueFileFilter.INSTANCE).iterator().next();
 				FileDependency fileDependencyObj = new FileDependency(jar);
 				fileDependencyObj.setGradleFormatDependency(gradleDependency.getGradleFormat());
 				fileDependencyObj.setDependencyType(gradleDependency.getDependencyType());
-				fileDependencies.add(fileDependencyObj);
+				workrspaceDependencies.add(fileDependencyObj);
 			} catch (NoSuchElementException e) {
 				System.err.println("Could not download dependency " + gradleDependency.getGradleFormat());
 			} catch (IOException e) {
@@ -265,7 +237,7 @@ public class Workspace {
 
 	private void populateProjectFileDependencies() {
 		for (Project project : projectList) {
-			for (FileDependency fileDep : fileDependencies) {
+			for (FileDependency fileDep : workrspaceDependencies) {
 				ArrayList<String> imports = project.getImports();
 				for (String exportClass : fileDep.getClasses()) {
 					if (imports.contains(exportClass)) {
@@ -299,8 +271,9 @@ public class Workspace {
 		// workspace.addFileDependencies("C:\\Users\\Jan\\.gradle\\caches\\modules-2\\files-2.1\\junit\\junit\\4.11\\4e031bb61df09069aeb2bffb4019e7a5034a4ee0\\junit-4.11.jar");
 		workspace.addGradleDependency("junit:junit:4.10", DependencyType.TESTCOMPILE);
 		workspace.workspaceConfigurationsFinished();
-		workspace.generateGradleSuprojectFiles();
-		workspace.generateSettingsDotGradleFile();
 		workspace.printDependencyMatrix();
+		GradleFilesCreator fileCreator = new GradleFilesCreator(workspace);
+		fileCreator.generateGradleSettingsFiles();
+		fileCreator.generateGradleSuprojectFiles();
 	}
 }
