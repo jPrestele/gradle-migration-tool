@@ -3,7 +3,6 @@ package gradle.dependency.generator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.io.FileUtils;
@@ -43,6 +42,76 @@ public class Workspace {
 		return workrspaceDependencies;
 	}
 
+	/*
+	 * Only needs to be set if gradle cache isn't in userhome/.gradle/...
+	 */
+	public void setGradleDependencyCache(String path) {
+		gradleDependendenciesCache = new File(path);
+	}
+
+	public void setRepository(String repository) {
+		this.repositoryUrl = repository;
+	}
+
+	public void workspaceConfigurationsFinished() {
+		downloadDependencies();
+		addGradleDependenciesToWorkspaceDependencies();
+		populateProjectDependencies();
+		populateProjectFileDependencies();
+		if (transitiveDependencies) {
+			makeDependenciesTransitive();
+		}
+	}
+
+	/*
+	 * Add single dependency or folder which contains dependencies. Will recurse
+	 * through folder
+	 */
+	public void addFileDependencies(String... paths) {
+		for (String path : paths) {
+			File file = new File(path);
+			if (file.isFile() && path.endsWith(".jar")) {
+				addFileDependency(path);
+			}
+			if (file.isDirectory()) {
+				String[] filesInDirectory = file.list();
+				addFileDependencies(filesInDirectory);
+			}
+		}
+	}
+
+	/*
+	 * Defaualt DependencyType is COMPILE
+	 */
+	public void addFileDependency(String dependency) {
+		addFileDependency(dependency, DependencyType.COMPILE);
+	}
+
+	public void addFileDependency(String dependency, DependencyType type) {
+		try {
+			FileDependency fileDependency = new FileDependency(dependency);
+			workrspaceDependencies.add(fileDependency);
+		} catch (IOException e) {
+			System.err.println("Could not open jar : " + dependency);
+		}
+	}
+
+	public void addGradleDependencies(String... dependencies) {
+		for (String dependency : dependencies) {
+			addGradleDependency(dependency, DependencyType.COMPILE);
+		}
+	}
+
+	public void addGradleDependency(String dependency) {
+		addGradleDependency(dependency, DependencyType.COMPILE);
+	}
+
+	public void addGradleDependency(String dependency, DependencyType type) {
+		GradleDependency gradleDependency = new GradleDependency(dependency);
+		gradleDependency.setDependencyType(type);
+		this.gradleDependencies.add(gradleDependency);
+	}
+
 	public void printDependencyMatrix() {
 		int verticalSize = projectList.size();
 		int horizontalSize = verticalSize + 1 + workrspaceDependencies.size();
@@ -80,79 +149,6 @@ public class Workspace {
 		}
 		TextTable tt = new TextTable(columnNames, data);
 		tt.printTable();
-	}
-
-	public void workspaceConfigurationsFinished() {
-		downloadDependencies();
-		addGradleDependenciesToWorkspaceDependencies();
-		populateProjectDependencies();
-		populateProjectFileDependencies();
-		if (transitiveDependencies) {
-			makeDependenciesTransitive();
-		}
-	}
-
-	/*
-	 * Add single dependency or folder which contains dependencies. Will recurse
-	 * through folder
-	 */
-	public void addFileDependencies(String... paths) {
-		for (String path : paths) {
-			File file = new File(path);
-			if (file.isFile() && path.endsWith(".jar")) {
-				addFileDependency(path);
-			}
-			if (file.isDirectory()) {
-				String[] filesInDirectory = file.list();
-				// only recurse if dir is not empty
-				if (filesInDirectory != null) {
-					addFileDependencies(filesInDirectory);
-				}
-			}
-		}
-	}
-
-	public void addFileDependency(String dependency) {
-		addFileDependency(dependency, DependencyType.COMPILE);
-	}
-
-	public void addFileDependency(String dependency, DependencyType type) {
-		try {
-			FileDependency fileDependency = new FileDependency(dependency);
-			workrspaceDependencies.add(fileDependency);
-		} catch (IOException e) {
-			System.err.println("Could not open jar : " + dependency);
-		}
-	}
-
-	/*
-	 * Use gradle dependency format : "group:name:version"
-	 */
-	public void addGradleDependencies(String... dependencies) {
-		for (String dependency : dependencies) {
-			addGradleDependency(dependency, DependencyType.COMPILE);
-		}
-	}
-
-	public void addGradleDependency(String dependency) {
-		addGradleDependency(dependency, DependencyType.COMPILE);
-	}
-
-	public void addGradleDependency(String dependency, DependencyType type) {
-		GradleDependency gradleDependency = new GradleDependency(dependency);
-		gradleDependency.setDependencyType(type);
-		this.gradleDependencies.add(gradleDependency);
-	}
-
-	/*
-	 * Only needs to be set if gradle cache isn't in userhome/.gradle/...
-	 */
-	public void setGradleDependencyCache(String path) {
-		gradleDependendenciesCache = new File(path);
-	}
-
-	public void setRepository(String repository) {
-		this.repositoryUrl = repository;
 	}
 
 	/*
@@ -248,20 +244,26 @@ public class Workspace {
 		}
 	}
 
-	private void removeProjects(String... removeProjects) {
-		int sizeBeforeRemoval = projectList.size();
-		Iterator<Project> projectIterator = projectList.iterator();
-		while (projectIterator.hasNext()) {
-			String projectName = projectIterator.next().getName();
-			for (String removeProject : removeProjects) {
-				if (projectName.equals(removeProject)) {
-					projectIterator.remove();
-				}
+	/*
+	 * returns true if project got removed
+	 */
+	private boolean removeProject(String name) {
+		for (Project project : projectList) {
+			if (project.getName().equals(name)) {
+				projectList.remove(project);
+				return true;
 			}
 		}
-		int sizeAfterRemoval = projectList.size();
-		int numberProjectsRemoved = sizeBeforeRemoval - sizeAfterRemoval;
-		System.out.println(numberProjectsRemoved + " projects removed");
+		return false;
+	}
+
+	private void removeProjects(String... removeProjects) {
+		for (String name : removeProjects) {
+			boolean removedSuccesfully = removeProject(name);
+			if (!removedSuccesfully) {
+				System.out.println("Could not remove project " + name);
+			}
+		}
 	}
 
 	public static void main(String[] args) throws InterruptedException {

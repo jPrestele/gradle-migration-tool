@@ -26,8 +26,16 @@ public class JavaFile extends File {
 			String impStatem = imports.get(i);
 			impStatem = impStatem.trim();
 			// .* replacement adds the package name as import
-			impStatem = StringUtility.removeAllOccurences(impStatem, "import ", ";", "static", ".*");
+			impStatem = removeAllOccurences(impStatem, "import ", ";", "static", ".*");
 			imports.set(i, impStatem);
 		}
+	}
+
+	public String removeAllOccurences(String input, String... expressions) {
+		String replacement = input;
+		for (String expression : expressions) {
+			replacement = replacement.replace(expression, "");
+		}
+		return replacement;
 	}
 }
