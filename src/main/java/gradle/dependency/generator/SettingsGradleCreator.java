@@ -15,6 +15,6 @@ public class SettingsGradleCreator {
 		// remove final comma
 		output.deleteCharAt(output.length() - newLine.length() - 1);
 		WritableFile settingsGradle = new WritableFile(workspace.getWorkspaceRoot() + "\\" + fileName);
-		settingsGradle.write(output.toString());
+		settingsGradle.create(output.toString());
 	}
 }

@@ -11,25 +11,23 @@ public class GradleFilesCreator {
 
 	public void generateGradleSuprojectFiles() {
 		for (Project project : workspace.getProjects()) {
-			GradleFile gradleFile = new GradleFile(project.getFile());
+			WritableFile gradleBuildFile = new WritableFile(project.getFilePath() + "\\build.gradle");
 			// don't create build.gradle if no dependencies exist for project
 			if (project.getDependencies().isEmpty() == false || project.getFileDependencies().isEmpty() == false) {
-				String newLine = System.lineSeparator();
-				gradleFile.append("dependencies {" + newLine);
+				gradleBuildFile.append("dependencies {").newLine();
 				for (Project projectDependency : project.getDependencies()) {
-					gradleFile.append("\t" + projectDependency.getDependencyType().getType() + " project(':" + projectDependency.getName() + "')" + newLine);
+					gradleBuildFile.append("\t" + projectDependency.getDependencyType().getType() + " project(':" + projectDependency.getName() + "')").newLine();
 				}
 				for (FileDependency fileDependency : project.getFileDependencies()) {
-					// check if it is local dependency or remote dependency
 					if (fileDependency.isGradleDependency()) {
-						gradleFile.append("\t" + fileDependency.getDependencyType().getType() + " '" + fileDependency.getGradleFormatDependency() + "'" + newLine);
+						gradleBuildFile.append("\t" + fileDependency.getDependencyType().getType() + " '" + fileDependency.getGradleFormatDependency() + "'").newLine();
 					} else {
-						gradleFile.append("\tcompile files('" + fileDependency.getPath() + "')" + newLine);
+						gradleBuildFile.append("\tcompile files('" + fileDependency.getPath() + "')").newLine();
 					}
 				}
-				gradleFile.append("}");
+				gradleBuildFile.append("}");
 			}
-			gradleFile.write();
+			gradleBuildFile.write();
 		}
 	}
 

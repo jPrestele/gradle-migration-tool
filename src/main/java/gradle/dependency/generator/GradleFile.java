@@ -16,6 +16,6 @@ public class GradleFile {
 
 	public void write() {
 		WritableFile wFile = new WritableFile(file);
-		wFile.write(output.toString());
+		wFile.create(output.toString());
 	}
 }

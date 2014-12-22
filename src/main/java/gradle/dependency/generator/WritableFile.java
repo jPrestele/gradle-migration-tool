@@ -19,6 +19,9 @@ public class WritableFile extends File {
 		super(file.getAbsolutePath());
 	}
 
+	/*
+	 * returns object so multiple appens or newline can be used in one line
+	 */
 	public WritableFile append(String string) {
 		fileOutput += string;
 		return this;
@@ -32,10 +35,10 @@ public class WritableFile extends File {
 	 * should only be used if append function was used
 	 */
 	public void write() {
-		write(fileOutput);
+		create(fileOutput);
 	}
 
-	public void write(String output) {
+	public void create(String output) {
 		File file = super.getAbsoluteFile();
 		try {
 			BufferedWriter buffWrite = new BufferedWriter(new FileWriter(file));

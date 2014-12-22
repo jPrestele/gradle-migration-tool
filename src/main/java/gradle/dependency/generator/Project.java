@@ -32,6 +32,10 @@ public class Project {
 		return rootFile;
 	}
 
+	public String getFilePath() {
+		return rootFile.getAbsolutePath();
+	}
+
 	public ArrayList<String> getImports() {
 		return imports;
 	}
