@@ -53,6 +53,13 @@ public class Workspace {
 		this.repositoryUrl = repository;
 	}
 
+	/*
+	 * default is transitive
+	 */
+	public void setTransitiveDependencies(boolean transitive) {
+		transitiveDependencies = transitive;
+	}
+
 	public void workspaceConfigurationsFinished() {
 		downloadDependencies();
 		addGradleDependenciesToWorkspaceDependencies();
@@ -151,11 +158,13 @@ public class Workspace {
 		tt.printTable();
 	}
 
-	/*
-	 * default is transitive
-	 */
-	public void setTransitiveDependencies(boolean transitive) {
-		transitiveDependencies = transitive;
+	public void removeProjects(String... removeProjects) {
+		for (String name : removeProjects) {
+			boolean removedSuccesfully = removeProject(name);
+			if (!removedSuccesfully) {
+				System.out.println("Could not remove project " + name);
+			}
+		}
 	}
 
 	private void downloadDependencies() {
@@ -255,15 +264,6 @@ public class Workspace {
 			}
 		}
 		return false;
-	}
-
-	private void removeProjects(String... removeProjects) {
-		for (String name : removeProjects) {
-			boolean removedSuccesfully = removeProject(name);
-			if (!removedSuccesfully) {
-				System.out.println("Could not remove project " + name);
-			}
-		}
 	}
 
 	public static void main(String[] args) throws InterruptedException {
