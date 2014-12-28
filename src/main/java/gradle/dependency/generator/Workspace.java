@@ -277,5 +277,6 @@ public class Workspace {
 		GradleFilesCreator fileCreator = new GradleFilesCreator(workspace);
 		fileCreator.generateGradleSettingsFiles();
 		fileCreator.generateGradleSuprojectFiles();
+		fileCreator.generateGradleDependencylibrariesFile();
 	}
 }

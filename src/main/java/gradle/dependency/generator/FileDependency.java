@@ -13,6 +13,7 @@ public class FileDependency {
 	private boolean isGradleDependency = false;
 	private String gradleFormatDependency;
 	private DependencyType dependencyType = DependencyType.COMPILE;
+	private GradleDependency gradleDependency;
 
 	/*
 	 * Once an actual jar is added to the dependency the getClasses() methods

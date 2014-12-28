@@ -1,5 +1,8 @@
 package gradle.dependency.generator;
 
+/*
+ * This object only contains information how to get the actual file of the dependency but doesn't store it
+ */
 public class GradleDependency {
 	private String dependencyGradleFormat;
 	private String group;

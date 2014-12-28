@@ -31,27 +31,41 @@ public class GradleFilesCreator {
 		}
 	}
 
+	public void generateGradleDependencylibrariesFile() {
+		WritableFile librariesFile = new WritableFile(workspace.getWorkspaceRoot() + "/libraries.gradle");
+		librariesFile.append("ext {").newLine().append("\tlibraries = [").newLine();
+		ArrayList<FileDependency> dependencies = workspace.getWorkspaceDependencies();
+		for (FileDependency dependency : dependencies) {
+			librariesFile.append("\t\t" + dependency.getName() + " : \"" + dependency.getGradleFormatDependency() + "\"");
+			if (!isLastItem(dependency, dependencies)) {
+				librariesFile.append(",");
+			}
+			librariesFile.newLine();
+		}
+		librariesFile.append("\t]").newLine().append("}");
+		librariesFile.write();
+	}
+
+	private <T> boolean isLastItem(T item, ArrayList<T> array) {
+		int maxIndex = array.size() - 1;
+		if (array.indexOf(item) == maxIndex) {
+			return true;
+		}
+		return false;
+	}
+
 	public void generateGradleSettingsFiles() {
 		WritableFile file = new WritableFile(workspace.getWorkspaceRoot() + "\\.settings");
 		file.append("include").newLine();
-		for (Project project : workspace.getProjects()) {
+		ArrayList<Project> projectList = workspace.getProjects();
+		for (Project project : projectList) {
 			file.append("\t'" + project.getName() + "'");
 			// ensure last entry in the file doesn't have a comma
-			if (!isLastProject(project)) {
+			if (!isLastItem(project, projectList)) {
 				file.append(",");
 			}
 			file.newLine();
 		}
 		file.write();
-	}
-
-	private boolean isLastProject(Project project) {
-		ArrayList<Project> projectList = workspace.getProjects();
-		int lastIndex = projectList.size() - 1;
-		if (projectList.indexOf(project) == lastIndex) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 }

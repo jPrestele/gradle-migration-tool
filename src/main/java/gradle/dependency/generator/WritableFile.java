@@ -27,8 +27,9 @@ public class WritableFile extends File {
 		return this;
 	}
 
-	public void newLine() {
+	public WritableFile newLine() {
 		fileOutput += newLine;
+		return this;
 	}
 
 	/*
