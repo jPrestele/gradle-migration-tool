@@ -62,6 +62,7 @@ public class GradleCaller {
 		try {
 			String line = buffRead.readLine();
 			while (line != null) {
+				System.out.println(line);
 				line = buffRead.readLine();
 			}
 			buffRead.close();

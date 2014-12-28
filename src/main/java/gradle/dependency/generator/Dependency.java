@@ -1,23 +1,30 @@
 package gradle.dependency.generator;
 
-/*
- * This object only contains information how to get the actual file of the dependency but doesn't store it
- */
-public class GradleDependency {
-	private String dependencyGradleFormat;
-	private String group;
-	private String name;
-	private String version;
-	private String jarName;
-	private DependencyType dependencyType = DependencyType.COMPILE;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
-	/*
-	 * Gradle dependency format : "group:name:version"
-	 */
-	public GradleDependency(String dependencyGradleFormat) {
+public class Dependency {
+	private JarFile jarFile;
+	private ArrayList<String> exportedClasses = new ArrayList<String>();
+	private String jarName;
+	private boolean hasJar = false;
+
+	private DependencyType dependencyType = DependencyType.COMPILE;
+	private String dependencyGradleFormat;
+	private String name;
+	private String group;
+	private String version;
+
+	public Dependency(String dependencyGradleFormat) {
 		this.dependencyGradleFormat = dependencyGradleFormat;
 		populateGroupNameVersion();
 		jarName = name + '-' + version + ".jar";
+	}
+
+	public String getPath() {
+		return jarFile.getName();
 	}
 
 	/*
@@ -26,6 +33,10 @@ public class GradleDependency {
 	 */
 	public String getGradleFormat() {
 		return dependencyGradleFormat;
+	}
+
+	public ArrayList<String> getClasses() {
+		return exportedClasses;
 	}
 
 	public String getGroup() {
@@ -55,6 +66,16 @@ public class GradleDependency {
 		this.dependencyType = dependencyType;
 	}
 
+	public void setJar(JarFile jar) {
+		this.jarFile = jar;
+		populateExportedClasses();
+		hasJar = true;
+	}
+
+	public boolean hasJar() {
+		return hasJar;
+	}
+
 	private void populateGroupNameVersion() {
 		String dependency = dependencyGradleFormat;
 		for (int i = 1; i <= 2; i++) {
@@ -70,4 +91,22 @@ public class GradleDependency {
 		}
 		version = dependency;
 	}
+
+	private void populateExportedClasses() {
+		Enumeration<JarEntry> jarEntries = jarFile.entries();
+		while (jarEntries.hasMoreElements()) {
+			String jarEntry = jarEntries.nextElement().getName();
+			if (jarEntry.endsWith(".class")) {
+				String classExportFormat = normalizeEntry(jarEntry);
+				exportedClasses.add(classExportFormat);
+			}
+		}
+	}
+
+	private String normalizeEntry(String entry) {
+		String entryNoSuffix = entry.replace(".class", "");
+		String entryPackageFormat = entryNoSuffix.replace("/", ".");
+		return entryPackageFormat;
+	}
+
 }

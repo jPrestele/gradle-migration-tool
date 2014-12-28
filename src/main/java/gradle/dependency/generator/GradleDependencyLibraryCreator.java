@@ -3,7 +3,7 @@ package gradle.dependency.generator;
 import java.util.ArrayList;
 
 public class GradleDependencyLibraryCreator {
-	private ArrayList<FileDependency> fileDependencies;
+	private ArrayList<Dependency> fileDependencies;
 	private WritableFile outputFile;
 
 	public GradleDependencyLibraryCreator(Workspace workspace) {

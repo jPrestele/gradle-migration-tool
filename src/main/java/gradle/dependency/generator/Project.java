@@ -10,7 +10,7 @@ public class Project {
 	private ArrayList<String> imports;
 	private ArrayList<String> exports;
 	private ArrayList<Project> projectDependencies;
-	private ArrayList<FileDependency> fileDependencies;
+	private ArrayList<Dependency> fileDependencies;
 	private DependencyType dependencyType = DependencyType.COMPILE;
 
 	public Project(File rootFolder) {
@@ -18,7 +18,7 @@ public class Project {
 		projectName = rootFolder.getName();
 		packages = new ArrayList<Package>();
 		projectDependencies = new ArrayList<Project>();
-		fileDependencies = new ArrayList<FileDependency>();
+		fileDependencies = new ArrayList<Dependency>();
 		populatePackages(rootFile);
 		populateImports();
 		populateExports();
@@ -52,7 +52,7 @@ public class Project {
 		return projectDependencies;
 	}
 
-	public ArrayList<FileDependency> getFileDependencies() {
+	public ArrayList<Dependency> getFileDependencies() {
 		return fileDependencies;
 	}
 
@@ -64,7 +64,7 @@ public class Project {
 		this.dependencyType = dependencyType;
 	}
 
-	public void addFileDependency(FileDependency dependency) {
+	public void addFileDependency(Dependency dependency) {
 		fileDependencies.add(dependency);
 	}
 

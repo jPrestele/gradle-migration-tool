@@ -1,32 +1,21 @@
 package gradle.dependency.generator;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.NoSuchElementException;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import dnl.utils.text.table.TextTable;
 
 public class Workspace {
 	private ArrayList<Project> projectList;
 	private File workspaceRootFile;
-	private ArrayList<GradleDependency> gradleDependencies;
-	private ArrayList<FileDependency> workrspaceDependencies;
-	private File gradleDependendenciesCache;
+	private ArrayList<Dependency> workrspaceDependencies;
 	private String repositoryUrl = "http://repo1.maven.org/maven2/";
 	private boolean transitiveDependencies = true;
 
 	public Workspace(String workspaceRootPath) {
 		this.workspaceRootFile = new File(workspaceRootPath);
 		projectList = new ArrayList<Project>();
-		gradleDependencies = new ArrayList<GradleDependency>();
-		workrspaceDependencies = new ArrayList<FileDependency>();
-		String userHomeDir = System.getProperty("user.home");
-		gradleDependendenciesCache = new File(userHomeDir + "\\.gradle\\caches\\modules-2\\files-2.1");
+		workrspaceDependencies = new ArrayList<Dependency>();
 		populateProjects();
 	}
 
@@ -38,15 +27,8 @@ public class Workspace {
 		return workspaceRootFile;
 	}
 
-	public ArrayList<FileDependency> getWorkspaceDependencies() {
+	public ArrayList<Dependency> getWorkspaceDependencies() {
 		return workrspaceDependencies;
-	}
-
-	/*
-	 * Only needs to be set if gradle cache isn't in userhome/.gradle/...
-	 */
-	public void setGradleDependencyCache(String path) {
-		gradleDependendenciesCache = new File(path);
 	}
 
 	public void setRepository(String repository) {
@@ -62,44 +44,10 @@ public class Workspace {
 
 	public void workspaceConfigurationsFinished() {
 		downloadDependencies();
-		addGradleDependenciesToWorkspaceDependencies();
 		populateProjectDependencies();
 		populateProjectFileDependencies();
 		if (transitiveDependencies) {
 			makeDependenciesTransitive();
-		}
-	}
-
-	/*
-	 * Add single dependency or folder which contains dependencies. Will recurse
-	 * through folder
-	 */
-	public void addFileDependencies(String... paths) {
-		for (String path : paths) {
-			File file = new File(path);
-			if (file.isFile() && path.endsWith(".jar")) {
-				addFileDependency(path);
-			}
-			if (file.isDirectory()) {
-				String[] filesInDirectory = file.list();
-				addFileDependencies(filesInDirectory);
-			}
-		}
-	}
-
-	/*
-	 * Defaualt DependencyType is COMPILE
-	 */
-	public void addFileDependency(String dependency) {
-		addFileDependency(dependency, DependencyType.COMPILE);
-	}
-
-	public void addFileDependency(String dependency, DependencyType type) {
-		try {
-			FileDependency fileDependency = new FileDependency(dependency);
-			workrspaceDependencies.add(fileDependency);
-		} catch (IOException e) {
-			System.err.println("Could not open jar : " + dependency);
 		}
 	}
 
@@ -114,9 +62,9 @@ public class Workspace {
 	}
 
 	public void addGradleDependency(String dependency, DependencyType type) {
-		GradleDependency gradleDependency = new GradleDependency(dependency);
-		gradleDependency.setDependencyType(type);
-		this.gradleDependencies.add(gradleDependency);
+		Dependency fileDependency = new Dependency(dependency);
+		fileDependency.setDependencyType(type);
+		this.workrspaceDependencies.add(fileDependency);
 	}
 
 	public void printDependencyMatrix() {
@@ -169,26 +117,8 @@ public class Workspace {
 
 	private void downloadDependencies() {
 		GradleDependencyDownloader downloader = new GradleDependencyDownloader(repositoryUrl);
-		downloader.addDependencies(gradleDependencies);
+		downloader.addDependencies(workrspaceDependencies);
 		downloader.downloadDependencies();
-	}
-
-	// after Gradle downloaded Dependencies
-	private void addGradleDependenciesToWorkspaceDependencies() {
-		for (GradleDependency gradleDependency : gradleDependencies) {
-			try {
-				File jar = FileUtils.listFiles(gradleDependendenciesCache, FileFilterUtils.nameFileFilter(gradleDependency.getJarName()), TrueFileFilter.INSTANCE).iterator().next();
-				FileDependency fileDependencyObj = new FileDependency(jar);
-				fileDependencyObj.setGradleFormatDependency(gradleDependency.getGradleFormat());
-				fileDependencyObj.setDependencyType(gradleDependency.getDependencyType());
-				workrspaceDependencies.add(fileDependencyObj);
-			} catch (NoSuchElementException e) {
-				System.err.println("Could not download dependency " + gradleDependency.getGradleFormat());
-			} catch (IOException e) {
-				System.err.println("Could not open dependency " + gradleDependency.getGradleFormat());
-			}
-		}
-
 	}
 
 	private void makeDependenciesTransitive() {
@@ -197,7 +127,7 @@ public class Workspace {
 		// currentProject
 		for (Project project : projectList) {
 			ArrayList<Project> projectDependencies = project.getDependencies();
-			ArrayList<FileDependency> fileDependencies = project.getFileDependencies();
+			ArrayList<Dependency> fileDependencies = project.getFileDependencies();
 			ArrayList<Project> dependenciesIterateCopy = new ArrayList<Project>(projectDependencies);
 			for (Project dependencyProject : dependenciesIterateCopy) {
 				// remove duplicate projects
@@ -205,7 +135,7 @@ public class Workspace {
 					projectDependencies.remove(dependencyProjectDependency);
 				}
 				// remove duplicate fileDependencies
-				for (FileDependency dependencyProjectFileDependency : dependencyProject.getFileDependencies()) {
+				for (Dependency dependencyProjectFileDependency : dependencyProject.getFileDependencies()) {
 					fileDependencies.remove(dependencyProjectFileDependency);
 				}
 			}
@@ -242,7 +172,7 @@ public class Workspace {
 
 	private void populateProjectFileDependencies() {
 		for (Project project : projectList) {
-			for (FileDependency fileDep : workrspaceDependencies) {
+			for (Dependency fileDep : workrspaceDependencies) {
 				ArrayList<String> imports = project.getImports();
 				for (String exportClass : fileDep.getClasses()) {
 					if (imports.contains(exportClass)) {
@@ -272,6 +202,7 @@ public class Workspace {
 		workspace.setTransitiveDependencies(true);
 		// workspace.addFileDependencies("C:\\Users\\Jan\\.gradle\\caches\\modules-2\\files-2.1\\junit\\junit\\4.11\\4e031bb61df09069aeb2bffb4019e7a5034a4ee0\\junit-4.11.jar");
 		workspace.addGradleDependency("junit:junit:4.10", DependencyType.TESTCOMPILE);
+		workspace.addGradleDependency("org.apache.commons:commons-lang3:3.3.2");
 		workspace.workspaceConfigurationsFinished();
 		workspace.printDependencyMatrix();
 		GradleFilesCreator fileCreator = new GradleFilesCreator(workspace);

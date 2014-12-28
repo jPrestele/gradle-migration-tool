@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class GradleFilesCreator {
 	private Workspace workspace;
+	private boolean useDependencyLibraries = false;
 
 	public GradleFilesCreator(Workspace workspace) {
 		this.workspace = workspace;
@@ -18,12 +19,10 @@ public class GradleFilesCreator {
 				for (Project projectDependency : project.getDependencies()) {
 					gradleBuildFile.append("\t" + projectDependency.getDependencyType().getType() + " project(':" + projectDependency.getName() + "')").newLine();
 				}
-				for (FileDependency fileDependency : project.getFileDependencies()) {
-					if (fileDependency.isGradleDependency()) {
-						gradleBuildFile.append("\t" + fileDependency.getDependencyType().getType() + " '" + fileDependency.getGradleFormatDependency() + "'").newLine();
-					} else {
-						gradleBuildFile.append("\tcompile files('" + fileDependency.getPath() + "')").newLine();
-					}
+				gradleBuildFile.newLine();
+				for (Dependency fileDependency : project.getFileDependencies()) {
+					String dependencyEntry = deterimeDependencyEntry(fileDependency);
+					gradleBuildFile.append("\t" + fileDependency.getDependencyType().getType() + " '" + dependencyEntry + "'").newLine();
 				}
 				gradleBuildFile.append("}");
 			}
@@ -31,12 +30,21 @@ public class GradleFilesCreator {
 		}
 	}
 
+	private String deterimeDependencyEntry(Dependency dependency) {
+		if (useDependencyLibraries) {
+			return "libraries." + dependency.getName();
+		} else {
+			return dependency.getGradleFormat();
+		}
+
+	}
+
 	public void generateGradleDependencylibrariesFile() {
 		WritableFile librariesFile = new WritableFile(workspace.getWorkspaceRoot() + "/libraries.gradle");
 		librariesFile.append("ext {").newLine().append("\tlibraries = [").newLine();
-		ArrayList<FileDependency> dependencies = workspace.getWorkspaceDependencies();
-		for (FileDependency dependency : dependencies) {
-			librariesFile.append("\t\t" + dependency.getName() + " : \"" + dependency.getGradleFormatDependency() + "\"");
+		ArrayList<Dependency> dependencies = workspace.getWorkspaceDependencies();
+		for (Dependency dependency : dependencies) {
+			librariesFile.append("\t\t" + dependency.getName() + " : \"" + dependency.getGradleFormat() + "\"");
 			if (!isLastItem(dependency, dependencies)) {
 				librariesFile.append(",");
 			}
@@ -44,6 +52,7 @@ public class GradleFilesCreator {
 		}
 		librariesFile.append("\t]").newLine().append("}");
 		librariesFile.write();
+		useDependencyLibraries = true;
 	}
 
 	private <T> boolean isLastItem(T item, ArrayList<T> array) {
