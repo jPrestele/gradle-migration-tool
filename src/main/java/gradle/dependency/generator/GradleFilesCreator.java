@@ -14,22 +14,32 @@ public class GradleFilesCreator {
 		for (Project project : workspace.getProjects()) {
 			WritableFile gradleBuildFile = new WritableFile(project.getFilePath() + "\\build.gradle");
 			// don't create build.gradle if no dependencies exist for project
-			if (project.getDependencies().isEmpty() == false || project.getFileDependencies().isEmpty() == false) {
+			ArrayList<Dependency> fileDependencies = project.getFileDependencies();
+			ArrayList<Project> projectDependencies = project.getDependencies();
+			if (!projectDependencies.isEmpty() || !fileDependencies.isEmpty()) {
 				gradleBuildFile.append("dependencies {").newLine();
-				for (Project projectDependency : project.getDependencies()) {
+				// Project dependency entries
+				for (Project projectDependency : projectDependencies) {
 					gradleBuildFile.append("\t" + projectDependency.getDependencyType().getType() + " project(':" + projectDependency.getName() + "')").newLine();
 				}
-				gradleBuildFile.newLine();
-				for (Dependency fileDependency : project.getFileDependencies()) {
+				if (!projectDependencies.isEmpty()) {
+					gradleBuildFile.newLine();
+				}
+				// File dependency entries
+				for (Dependency fileDependency : fileDependencies) {
 					String dependencyEntry = deterimeDependencyEntry(fileDependency);
 					gradleBuildFile.append("\t" + fileDependency.getDependencyType().getType() + " '" + dependencyEntry + "'").newLine();
 				}
 				gradleBuildFile.append("}");
+				gradleBuildFile.write();
 			}
-			gradleBuildFile.write();
 		}
 	}
 
+	/*
+	 * if a dependency library is created the dependency entries in the build
+	 * will refer to the created library
+	 */
 	private String deterimeDependencyEntry(Dependency dependency) {
 		if (useDependencyLibraries) {
 			return "libraries." + dependency.getName();

@@ -203,11 +203,12 @@ public class Workspace {
 		// workspace.addFileDependencies("C:\\Users\\Jan\\.gradle\\caches\\modules-2\\files-2.1\\junit\\junit\\4.11\\4e031bb61df09069aeb2bffb4019e7a5034a4ee0\\junit-4.11.jar");
 		workspace.addGradleDependency("junit:junit:4.10", DependencyType.TESTCOMPILE);
 		workspace.addGradleDependency("org.apache.commons:commons-lang3:3.3.2");
+		workspace.addGradleDependency("org.apache.httpcomponents:httpclient:4.3.6");
 		workspace.workspaceConfigurationsFinished();
 		workspace.printDependencyMatrix();
 		GradleFilesCreator fileCreator = new GradleFilesCreator(workspace);
+		fileCreator.generateGradleDependencylibrariesFile();
 		fileCreator.generateGradleSettingsFiles();
 		fileCreator.generateGradleSuprojectFiles();
-		fileCreator.generateGradleDependencylibrariesFile();
 	}
 }
