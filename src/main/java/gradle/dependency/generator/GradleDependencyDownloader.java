@@ -53,13 +53,16 @@ public class GradleDependencyDownloader {
 	 */
 	private void searchAndSetDependencyJars() {
 		for (Dependency dependency : dependencies) {
-			try {
-				File jar = FileUtils.listFiles(gradleDependenciesCache, FileFilterUtils.nameFileFilter(dependency.getJarName()), TrueFileFilter.INSTANCE).iterator().next();
-				dependency.setJar(new JarFile(jar));
-			} catch (NoSuchElementException e) {
-				System.err.println("Could not download dependency " + dependency.getGradleFormat());
-			} catch (IOException e) {
-				System.err.println("Could not open dependency " + dependency.getGradleFormat());
+			if (dependency instanceof RemoteGradleDependency) {
+				RemoteGradleDependency gradleDependency = (RemoteGradleDependency) dependency;
+				try {
+					File jar = FileUtils.listFiles(gradleDependenciesCache, FileFilterUtils.nameFileFilter(gradleDependency.getJarFileName()), TrueFileFilter.INSTANCE).iterator().next();
+					dependency.setJar(new JarFile(jar));
+				} catch (NoSuchElementException e) {
+					System.err.println("Could not download dependency " + gradleDependency.getDependencyDefinition());
+				} catch (IOException e) {
+					System.err.println("Could not open dependency " + gradleDependency.getDependencyDefinition());
+				}
 			}
 		}
 	}
@@ -72,8 +75,11 @@ public class GradleDependencyDownloader {
 	private void appendDependencyEntries() {
 		tempGradleBuildFile.append("dependencies { ");
 		for (Dependency dependency : dependencies) {
-			tempGradleBuildFile.append("compile '" + dependency.getGradleFormat() + "'");
-			tempGradleBuildFile.newLine();
+			if (dependency instanceof RemoteGradleDependency) {
+				RemoteGradleDependency gradleDependency = (RemoteGradleDependency) dependency;
+				tempGradleBuildFile.append("compile '" + gradleDependency.getDependencyDefinition() + "'");
+				tempGradleBuildFile.newLine();
+			}
 		}
 		tempGradleBuildFile.append("}");
 	}

@@ -62,7 +62,7 @@ public class Workspace {
 	}
 
 	public void addGradleDependency(String dependency, DependencyType type) {
-		Dependency fileDependency = new Dependency(dependency);
+		Dependency fileDependency = new RemoteGradleDependency(dependency);
 		fileDependency.setDependencyType(type);
 		this.workrspaceDependencies.add(fileDependency);
 	}
@@ -99,7 +99,7 @@ public class Workspace {
 				columnNames[i] = projectList.get(i - 1).getName();
 			} else {
 				// add file names
-				columnNames[i] = workrspaceDependencies.get(i - projectList.size() - 1).getName();
+				columnNames[i] = workrspaceDependencies.get(i - projectList.size() - 1).getJarName();
 			}
 		}
 		TextTable tt = new TextTable(columnNames, data);

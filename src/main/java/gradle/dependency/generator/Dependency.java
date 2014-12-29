@@ -1,5 +1,6 @@
 package gradle.dependency.generator;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
@@ -7,52 +8,16 @@ import java.util.jar.JarFile;
 
 public class Dependency {
 	private JarFile jarFile;
-	private ArrayList<String> exportedClasses = new ArrayList<String>();
-	private String jarName;
 	private boolean hasJar = false;
-
+	private ArrayList<String> exportedClasses = new ArrayList<String>();
 	private DependencyType dependencyType = DependencyType.COMPILE;
-	private String dependencyGradleFormat;
-	private String name;
-	private String group;
-	private String version;
 
-	public Dependency(String dependencyGradleFormat) {
-		this.dependencyGradleFormat = dependencyGradleFormat;
-		populateGroupNameVersion();
-		jarName = name + '-' + version + ".jar";
-	}
-
-	public String getPath() {
-		return jarFile.getName();
-	}
-
-	/*
-	 * Returns String of dependency definition in gradle format(
-	 * group:name:version)
-	 */
-	public String getGradleFormat() {
-		return dependencyGradleFormat;
+	public String getJarName() {
+		return new File(jarFile.getName()).getName();
 	}
 
 	public ArrayList<String> getClasses() {
 		return exportedClasses;
-	}
-
-	public String getGroup() {
-		return group;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getVersion() {
-		return version;
-	}
-
-	public String getJarName() {
-		return jarName;
 	}
 
 	public DependencyType getDependencyType() {
@@ -66,6 +31,9 @@ public class Dependency {
 		this.dependencyType = dependencyType;
 	}
 
+	/*
+	 * Once a jar is set the exportedClasses will be populated
+	 */
 	public void setJar(JarFile jar) {
 		this.jarFile = jar;
 		populateExportedClasses();
@@ -74,22 +42,6 @@ public class Dependency {
 
 	public boolean hasJar() {
 		return hasJar;
-	}
-
-	private void populateGroupNameVersion() {
-		String dependency = dependencyGradleFormat;
-		for (int i = 1; i <= 2; i++) {
-			int colonIndex = dependency.indexOf(':');
-			String subString = dependency.substring(0, colonIndex);
-			dependency = dependency.substring(colonIndex + 1, dependency.length());
-			if (i == 1) {
-				group = subString;
-			}
-			if (i == 2) {
-				name = subString;
-			}
-		}
-		version = dependency;
 	}
 
 	private void populateExportedClasses() {

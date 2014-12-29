@@ -12,6 +12,6 @@ public interface IRemoteDependency {
 	 * return the dependency in the format in which the dependency is usually
 	 * specified
 	 */
-	public String getDefinition();
+	public String getDependencyDefinition();
 
 }

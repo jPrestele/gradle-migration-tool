@@ -27,8 +27,11 @@ public class GradleFilesCreator {
 				}
 				// File dependency entries
 				for (Dependency fileDependency : fileDependencies) {
-					String dependencyEntry = deterimeDependencyEntry(fileDependency);
-					gradleBuildFile.append("\t" + fileDependency.getDependencyType().getType() + " '" + dependencyEntry + "'").newLine();
+					if (fileDependency instanceof RemoteGradleDependency) {
+						RemoteGradleDependency gradleDependency = (RemoteGradleDependency) fileDependency;
+						String dependencyEntry = deterimeDependencyEntry(gradleDependency);
+						gradleBuildFile.append("\t" + gradleDependency.getDependencyType().getType() + " '" + dependencyEntry + "'").newLine();
+					}
 				}
 				gradleBuildFile.append("}");
 				gradleBuildFile.write();
@@ -40,11 +43,11 @@ public class GradleFilesCreator {
 	 * if a dependency library is created the dependency entries in the build
 	 * will refer to the created library
 	 */
-	private String deterimeDependencyEntry(Dependency dependency) {
+	private String deterimeDependencyEntry(RemoteGradleDependency dependency) {
 		if (useDependencyLibraries) {
 			return "libraries." + dependency.getName();
 		} else {
-			return dependency.getGradleFormat();
+			return dependency.getDependencyDefinition();
 		}
 
 	}
@@ -54,7 +57,10 @@ public class GradleFilesCreator {
 		librariesFile.append("ext {").newLine().append("\tlibraries = [").newLine();
 		ArrayList<Dependency> dependencies = workspace.getWorkspaceDependencies();
 		for (Dependency dependency : dependencies) {
-			librariesFile.append("\t\t" + dependency.getName() + " : \"" + dependency.getGradleFormat() + "\"");
+			if (dependency instanceof RemoteGradleDependency) {
+				RemoteGradleDependency gradleDependency = (RemoteGradleDependency) dependency;
+				librariesFile.append("\t\t" + gradleDependency.getName() + " : \"" + gradleDependency.getDependencyDefinition() + "\"");
+			}
 			if (!isLastItem(dependency, dependencies)) {
 				librariesFile.append(",");
 			}
