@@ -1,4 +1,4 @@
-package gradle.dependency.generator;
+package gradle.migration.tool.utility;
 
 import java.io.BufferedReader;
 import java.io.File;

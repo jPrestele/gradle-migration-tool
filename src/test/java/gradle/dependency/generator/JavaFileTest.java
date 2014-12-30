@@ -1,6 +1,7 @@
 package gradle.dependency.generator;
 
 import static org.junit.Assert.*;
+import gradle.migration.tool.workspace.JavaFile;
 
 import java.util.LinkedList;
 

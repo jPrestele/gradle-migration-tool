@@ -1,4 +1,7 @@
-package gradle.dependency.generator;
+package gradle.migration.tool.workspace;
+
+import gradle.migration.tool.gradle.file.creation.GradleFilesCreator;
+import gradle.migration.tool.utility.GradleDependencyDownloader;
 
 import java.io.File;
 import java.util.ArrayList;

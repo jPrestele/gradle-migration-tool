@@ -1,4 +1,4 @@
-package gradle.dependency.generator;
+package gradle.migration.tool.workspace;
 
 public enum DependencyType {
 	COMPILE("compile"), TESTCOMPILE("testCompile"), RUNTIME("runtime");

@@ -1,4 +1,6 @@
-package gradle.dependency.generator;
+package gradle.migration.tool.workspace;
+
+import gradle.migration.tool.utility.FileReaderPattern;
 
 import java.io.File;
 import java.util.ArrayList;

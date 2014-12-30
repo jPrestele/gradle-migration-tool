@@ -1,6 +1,7 @@
 package gradle.dependency.generator;
 
 import static org.junit.Assert.*;
+import gradle.migration.tool.utility.FileReaderPattern;
 
 import java.io.File;
 import java.util.LinkedList;

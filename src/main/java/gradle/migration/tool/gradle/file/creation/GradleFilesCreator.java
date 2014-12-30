@@ -1,4 +1,10 @@
-package gradle.dependency.generator;
+package gradle.migration.tool.gradle.file.creation;
+
+import gradle.migration.tool.utility.WritableFile;
+import gradle.migration.tool.workspace.Dependency;
+import gradle.migration.tool.workspace.Project;
+import gradle.migration.tool.workspace.RemoteGradleDependency;
+import gradle.migration.tool.workspace.Workspace;
 
 import java.util.ArrayList;
 

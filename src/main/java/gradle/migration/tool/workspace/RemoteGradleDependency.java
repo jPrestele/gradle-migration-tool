@@ -1,4 +1,6 @@
-package gradle.dependency.generator;
+package gradle.migration.tool.workspace;
+
+
 
 public class RemoteGradleDependency extends Dependency implements IRemoteDependency {
 

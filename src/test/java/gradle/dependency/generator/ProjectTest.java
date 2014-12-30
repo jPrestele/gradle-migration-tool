@@ -1,6 +1,8 @@
 package gradle.dependency.generator;
 
 import static org.junit.Assert.*;
+import gradle.migration.tool.workspace.Package;
+import gradle.migration.tool.workspace.Project;
 
 import java.io.File;
 import java.util.ArrayList;

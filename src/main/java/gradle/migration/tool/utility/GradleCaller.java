@@ -10,7 +10,7 @@
  * Last modified on: $Date: 2008/10/01 09:06:27MESZ $
  * Last modified by: $Author: Hardt, Dennis (dhardt7) prestej $
  */
-package gradle.dependency.generator;
+package gradle.migration.tool.utility;
 
 import java.io.BufferedReader;
 import java.io.File;
