@@ -30,7 +30,7 @@ public class GradleFilesCreator {
 					if (fileDependency instanceof RemoteGradleDependency) {
 						RemoteGradleDependency gradleDependency = (RemoteGradleDependency) fileDependency;
 						String dependencyEntry = deterimeDependencyEntry(gradleDependency);
-						gradleBuildFile.append("\t" + gradleDependency.getDependencyType().getType() + " '" + dependencyEntry + "'").newLine();
+						gradleBuildFile.append("\t" + gradleDependency.getDependencyType().getType() + " " + dependencyEntry).newLine();
 					}
 				}
 				gradleBuildFile.append("}");
@@ -47,15 +47,15 @@ public class GradleFilesCreator {
 		if (useDependencyLibraries) {
 			return "libraries." + dependency.getName();
 		} else {
-			return dependency.getDependencyDefinition();
+			return "'" + dependency.getDependencyDefinition() + "'";
 		}
 
 	}
 
 	public void generateGradleDependencylibrariesFile() {
-		WritableFile librariesFile = new WritableFile(workspace.getWorkspaceRoot() + "/libraries.gradle");
+		WritableFile librariesFile = new WritableFile(workspace.getRootFile() + "/libraries.gradle");
 		librariesFile.append("ext {").newLine().append("\tlibraries = [").newLine();
-		ArrayList<Dependency> dependencies = workspace.getWorkspaceDependencies();
+		ArrayList<Dependency> dependencies = workspace.getExternalLibraries();
 		for (Dependency dependency : dependencies) {
 			if (dependency instanceof RemoteGradleDependency) {
 				RemoteGradleDependency gradleDependency = (RemoteGradleDependency) dependency;
@@ -80,7 +80,7 @@ public class GradleFilesCreator {
 	}
 
 	public void generateGradleSettingsFiles() {
-		WritableFile file = new WritableFile(workspace.getWorkspaceRoot() + "\\.settings");
+		WritableFile file = new WritableFile(workspace.getRootFile() + "\\.settings");
 		file.append("include").newLine();
 		ArrayList<Project> projectList = workspace.getProjects();
 		for (Project project : projectList) {

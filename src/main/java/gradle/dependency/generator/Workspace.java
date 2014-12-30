@@ -6,29 +6,29 @@ import java.util.ArrayList;
 import dnl.utils.text.table.TextTable;
 
 public class Workspace {
-	private ArrayList<Project> projectList;
-	private File workspaceRootFile;
-	private ArrayList<Dependency> workrspaceDependencies;
-	private String repositoryUrl = "http://repo1.maven.org/maven2/";
-	private boolean transitiveDependencies = true;
+	private File rootFile;
+	private ArrayList<Project> projects;
+	private ArrayList<Dependency> externalLibraries;
+	private boolean transitiveDependencies = false;
+	private String repositoryUrl;
 
-	public Workspace(String workspaceRootPath) {
-		this.workspaceRootFile = new File(workspaceRootPath);
-		projectList = new ArrayList<Project>();
-		workrspaceDependencies = new ArrayList<Dependency>();
+	public Workspace(String rootPath) {
+		this.rootFile = new File(rootPath);
+		projects = new ArrayList<Project>();
+		externalLibraries = new ArrayList<Dependency>();
 		populateProjects();
 	}
 
+	public File getRootFile() {
+		return rootFile;
+	}
+
 	public ArrayList<Project> getProjects() {
-		return projectList;
+		return projects;
 	}
 
-	public File getWorkspaceRoot() {
-		return workspaceRootFile;
-	}
-
-	public ArrayList<Dependency> getWorkspaceDependencies() {
-		return workrspaceDependencies;
+	public ArrayList<Dependency> getExternalLibraries() {
+		return externalLibraries;
 	}
 
 	public void setRepository(String repository) {
@@ -53,7 +53,7 @@ public class Workspace {
 
 	public void addGradleDependencies(String... dependencies) {
 		for (String dependency : dependencies) {
-			addGradleDependency(dependency, DependencyType.COMPILE);
+			addGradleDependency(dependency);
 		}
 	}
 
@@ -64,26 +64,26 @@ public class Workspace {
 	public void addGradleDependency(String dependency, DependencyType type) {
 		Dependency fileDependency = new RemoteGradleDependency(dependency);
 		fileDependency.setDependencyType(type);
-		this.workrspaceDependencies.add(fileDependency);
+		this.externalLibraries.add(fileDependency);
 	}
 
 	public void printDependencyMatrix() {
-		int verticalSize = projectList.size();
-		int horizontalSize = verticalSize + 1 + workrspaceDependencies.size();
+		int verticalSize = projects.size();
+		int horizontalSize = verticalSize + 1 + externalLibraries.size();
 		Object[][] data = new Object[verticalSize][horizontalSize];
 		for (int i = 0; i < verticalSize; i++) {
 			for (int j = 0; j < horizontalSize; j++) {
 				// add project names in first column
 				if (j == 0) {
-					data[i][j] = projectList.get(i).getName();
-				} else if (j < projectList.size() + 1) {
+					data[i][j] = projects.get(i).getName();
+				} else if (j < projects.size() + 1) {
 					// add project dependencies
-					if (projectList.get(i).getDependencies().contains(projectList.get(j - 1))) {
+					if (projects.get(i).getDependencies().contains(projects.get(j - 1))) {
 						data[i][j] = new Integer(1);
 					}
 				} else {
 					// add file dependencies
-					if (projectList.get(i).getFileDependencies().contains(workrspaceDependencies.get(j - projectList.size() - 1))) {
+					if (projects.get(i).getFileDependencies().contains(externalLibraries.get(j - projects.size() - 1))) {
 						data[i][j] = new Integer(1);
 					}
 				}
@@ -94,30 +94,30 @@ public class Workspace {
 		for (int i = 0; i < horizontalSize; i++) {
 			if (i == 0) {
 				columnNames[0] = "";
-			} else if (i < projectList.size() + 1) {
+			} else if (i < projects.size() + 1) {
 				// add projects names
-				columnNames[i] = projectList.get(i - 1).getName();
+				columnNames[i] = projects.get(i - 1).getName();
 			} else {
 				// add file names
-				columnNames[i] = workrspaceDependencies.get(i - projectList.size() - 1).getJarName();
+				columnNames[i] = externalLibraries.get(i - projects.size() - 1).getJarName();
 			}
 		}
 		TextTable tt = new TextTable(columnNames, data);
 		tt.printTable();
 	}
 
-	public void removeProjects(String... removeProjects) {
-		for (String name : removeProjects) {
-			boolean removedSuccesfully = removeProject(name);
+	public void removeProjects(String... projects) {
+		for (String project : projects) {
+			boolean removedSuccesfully = removeProject(project);
 			if (!removedSuccesfully) {
-				System.out.println("Could not remove project " + name);
+				System.out.println("Could not remove project " + project);
 			}
 		}
 	}
 
 	private void downloadDependencies() {
 		GradleDependencyDownloader downloader = new GradleDependencyDownloader(repositoryUrl);
-		downloader.addDependencies(workrspaceDependencies);
+		downloader.addDependencies(externalLibraries);
 		downloader.downloadDependencies();
 	}
 
@@ -125,7 +125,7 @@ public class Workspace {
 		// go to projects on which current project depend. If they have
 		// the same dependencies as the parent project remove them in
 		// currentProject
-		for (Project project : projectList) {
+		for (Project project : projects) {
 			ArrayList<Project> projectDependencies = project.getDependencies();
 			ArrayList<Dependency> fileDependencies = project.getFileDependencies();
 			ArrayList<Project> dependenciesIterateCopy = new ArrayList<Project>(projectDependencies);
@@ -143,18 +143,20 @@ public class Workspace {
 	}
 
 	private void populateProjects() {
-		for (File workspaceFile : workspaceRootFile.listFiles()) {
+		System.out.println("PROJECTS");
+		for (File workspaceFile : rootFile.listFiles()) {
 			if (workspaceFile.isDirectory()) {
 				Project project = new Project(workspaceFile);
-				projectList.add(project);
+				projects.add(project);
+				System.out.println(project.getName());
 			}
 		}
-		System.out.println(projectList.size() + " projects found");
+		System.out.println("\n" + projects.size() + " projects found\n");
 	}
 
 	private void populateProjectDependencies() {
-		for (Project currentProject : projectList) {
-			for (Project iterateProject : projectList) {
+		for (Project currentProject : projects) {
+			for (Project iterateProject : projects) {
 				// skip own project
 				if (currentProject.equals(iterateProject)) {
 					continue;
@@ -171,8 +173,8 @@ public class Workspace {
 	}
 
 	private void populateProjectFileDependencies() {
-		for (Project project : projectList) {
-			for (Dependency fileDep : workrspaceDependencies) {
+		for (Project project : projects) {
+			for (Dependency fileDep : externalLibraries) {
 				ArrayList<String> imports = project.getImports();
 				for (String exportClass : fileDep.getClasses()) {
 					if (imports.contains(exportClass)) {
@@ -187,9 +189,10 @@ public class Workspace {
 	 * returns true if project got removed
 	 */
 	private boolean removeProject(String name) {
-		for (Project project : projectList) {
+		for (Project project : projects) {
 			if (project.getName().equals(name)) {
-				projectList.remove(project);
+				projects.remove(project);
+				System.out.println("Removed project: " + project.getName());
 				return true;
 			}
 		}
@@ -199,8 +202,8 @@ public class Workspace {
 	public static void main(String[] args) throws InterruptedException {
 		Workspace workspace = new Workspace("C:\\Users\\Jan\\Desktop\\git\\jbox2d");
 		workspace.removeProjects(".git", ".gradle", "gradle");
+		workspace.setRepository("http://repo1.maven.org/maven2/");
 		workspace.setTransitiveDependencies(true);
-		// workspace.addFileDependencies("C:\\Users\\Jan\\.gradle\\caches\\modules-2\\files-2.1\\junit\\junit\\4.11\\4e031bb61df09069aeb2bffb4019e7a5034a4ee0\\junit-4.11.jar");
 		workspace.addGradleDependency("junit:junit:4.10", DependencyType.TESTCOMPILE);
 		workspace.addGradleDependency("org.apache.commons:commons-lang3:3.3.2");
 		workspace.addGradleDependency("org.apache.httpcomponents:httpclient:4.3.6");

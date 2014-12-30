@@ -7,9 +7,9 @@ public class GradleDependencyLibraryCreator {
 	private WritableFile outputFile;
 
 	public GradleDependencyLibraryCreator(Workspace workspace) {
-		String workspacePath = workspace.getWorkspaceRoot().getAbsolutePath();
+		String workspacePath = workspace.getRootFile().getAbsolutePath();
 		outputFile = new WritableFile(workspacePath + "\\" + "library.gradle");
-		fileDependencies = workspace.getWorkspaceDependencies();
+		fileDependencies = workspace.getExternalLibraries();
 	}
 
 	public void generateGradleFileDepLibrary() {
