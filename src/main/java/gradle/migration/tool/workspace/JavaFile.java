@@ -5,11 +5,13 @@ import gradle.migration.tool.utility.FileReaderPattern;
 import java.io.File;
 import java.util.ArrayList;
 
-public class JavaFile extends File {
+public class JavaFile {
+
+	private File file;
 	private ArrayList<String> imports;
 
 	public JavaFile(String path) {
-		super(path);
+		file = new File(path);
 		populateImports();
 	}
 
@@ -17,13 +19,17 @@ public class JavaFile extends File {
 		return imports;
 	}
 
-	private void populateImports() {
-		FileReaderPattern fileReader = new FileReaderPattern(this);
-		imports = fileReader.getMatchesTillStopCondition(".*import .*;", ".*public (class|interface).*");
-		removeImportSyntax();
+	public File getFile() {
+		return file;
 	}
 
-	private void removeImportSyntax() {
+	private void populateImports() {
+		FileReaderPattern fileReader = new FileReaderPattern(file);
+		imports = fileReader.getMatchesTillStopCondition(".*import .*;", ".*public (class|interface|enum).*");
+		normalizeImports();
+	}
+
+	private void normalizeImports() {
 		for (int i = 0; i < imports.size(); i++) {
 			String impStatem = imports.get(i);
 			impStatem = impStatem.trim();
@@ -33,11 +39,17 @@ public class JavaFile extends File {
 		}
 	}
 
-	public String removeAllOccurences(String input, String... expressions) {
+	private String removeAllOccurences(String input, String... expressions) {
 		String replacement = input;
 		for (String expression : expressions) {
 			replacement = replacement.replace(expression, "");
 		}
 		return replacement;
 	}
+
+	@Override
+	public String toString() {
+		return file.getName();
+	}
+
 }

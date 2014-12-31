@@ -1,8 +1,6 @@
-package gradle.migration.tool.workspace;
+package gradle.migration.tool.dependencies;
 
-
-
-public class RemoteGradleDependency extends Dependency implements IRemoteDependency {
+public class GradleDependency extends RemoteDependency {
 
 	private String dependencyDefinition;
 	private String name;
@@ -10,7 +8,7 @@ public class RemoteGradleDependency extends Dependency implements IRemoteDepende
 	private String version;
 	private String jarFileName;
 
-	public RemoteGradleDependency(String dependencyGradleFormat) {
+	public GradleDependency(String dependencyGradleFormat) {
 		dependencyDefinition = dependencyGradleFormat;
 		populateGroupNameVersion();
 		jarFileName = name + '-' + version + ".jar";

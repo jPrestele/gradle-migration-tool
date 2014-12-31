@@ -1,4 +1,4 @@
-package gradle.migration.tool.workspace;
+package gradle.migration.tool.dependencies;
 
 public interface IRemoteDependency {
 

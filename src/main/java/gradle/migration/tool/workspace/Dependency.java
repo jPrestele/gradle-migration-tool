@@ -7,13 +7,13 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class Dependency {
-	private JarFile jarFile;
+	private JarFile jar;
 	private boolean hasJar = false;
 	private ArrayList<String> exportedClasses = new ArrayList<String>();
 	private DependencyType dependencyType = DependencyType.COMPILE;
 
 	public String getJarName() {
-		return new File(jarFile.getName()).getName();
+		return new File(jar.getName()).getName();
 	}
 
 	public ArrayList<String> getClasses() {
@@ -35,9 +35,9 @@ public class Dependency {
 	 * Once a jar is set the exportedClasses will be populated
 	 */
 	public void setJar(JarFile jar) {
-		this.jarFile = jar;
-		populateExportedClasses();
+		this.jar = jar;
 		hasJar = true;
+		populateExportedClasses();
 	}
 
 	public boolean hasJar() {
@@ -45,7 +45,7 @@ public class Dependency {
 	}
 
 	private void populateExportedClasses() {
-		Enumeration<JarEntry> jarEntries = jarFile.entries();
+		Enumeration<JarEntry> jarEntries = jar.entries();
 		while (jarEntries.hasMoreElements()) {
 			String jarEntry = jarEntries.nextElement().getName();
 			if (jarEntry.endsWith(".class")) {

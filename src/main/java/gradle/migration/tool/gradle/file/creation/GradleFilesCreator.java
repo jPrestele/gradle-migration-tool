@@ -1,9 +1,9 @@
 package gradle.migration.tool.gradle.file.creation;
 
+import gradle.migration.tool.dependencies.GradleDependency;
 import gradle.migration.tool.utility.WritableFile;
 import gradle.migration.tool.workspace.Dependency;
 import gradle.migration.tool.workspace.Project;
-import gradle.migration.tool.workspace.RemoteGradleDependency;
 import gradle.migration.tool.workspace.Workspace;
 
 import java.util.ArrayList;
@@ -18,23 +18,24 @@ public class GradleFilesCreator {
 
 	public void generateGradleSuprojectFiles() {
 		for (Project project : workspace.getProjects()) {
-			WritableFile gradleBuildFile = new WritableFile(project.getFilePath() + "\\build.gradle");
+			WritableFile gradleBuildFile = new WritableFile(project.getFile().getAbsolutePath() + "\\build.gradle");
+			ArrayList<Dependency> fileDependencies = project.getDependencies();
+			ArrayList<Project> projectDependencies = project.getProjectDependencies();
 			// don't create build.gradle if no dependencies exist for project
-			ArrayList<Dependency> fileDependencies = project.getFileDependencies();
-			ArrayList<Project> projectDependencies = project.getDependencies();
 			if (!projectDependencies.isEmpty() || !fileDependencies.isEmpty()) {
 				gradleBuildFile.append("dependencies {").newLine();
 				// Project dependency entries
 				for (Project projectDependency : projectDependencies) {
 					gradleBuildFile.append("\t" + projectDependency.getDependencyType().getType() + " project(':" + projectDependency.getName() + "')").newLine();
 				}
-				if (!projectDependencies.isEmpty()) {
+				// only seperate project dependencies and file dependencies if
+				// both are present
+				if (!projectDependencies.isEmpty() && !fileDependencies.isEmpty()) {
 					gradleBuildFile.newLine();
 				}
-				// File dependency entries
 				for (Dependency fileDependency : fileDependencies) {
-					if (fileDependency instanceof RemoteGradleDependency) {
-						RemoteGradleDependency gradleDependency = (RemoteGradleDependency) fileDependency;
+					if (fileDependency instanceof GradleDependency) {
+						GradleDependency gradleDependency = (GradleDependency) fileDependency;
 						String dependencyEntry = deterimeDependencyEntry(gradleDependency);
 						gradleBuildFile.append("\t" + gradleDependency.getDependencyType().getType() + " " + dependencyEntry).newLine();
 					}
@@ -49,7 +50,7 @@ public class GradleFilesCreator {
 	 * if a dependency library is created the dependency entries in the build
 	 * will refer to the created library
 	 */
-	private String deterimeDependencyEntry(RemoteGradleDependency dependency) {
+	private String deterimeDependencyEntry(GradleDependency dependency) {
 		if (useDependencyLibraries) {
 			return "libraries." + dependency.getName();
 		} else {
@@ -61,10 +62,10 @@ public class GradleFilesCreator {
 	public void generateGradleDependencylibrariesFile() {
 		WritableFile librariesFile = new WritableFile(workspace.getRootFile() + "/libraries.gradle");
 		librariesFile.append("ext {").newLine().append("\tlibraries = [").newLine();
-		ArrayList<Dependency> dependencies = workspace.getExternalLibraries();
+		ArrayList<Dependency> dependencies = workspace.getDependencies();
 		for (Dependency dependency : dependencies) {
-			if (dependency instanceof RemoteGradleDependency) {
-				RemoteGradleDependency gradleDependency = (RemoteGradleDependency) dependency;
+			if (dependency instanceof GradleDependency) {
+				GradleDependency gradleDependency = (GradleDependency) dependency;
 				librariesFile.append("\t\t" + gradleDependency.getName() + " : \"" + gradleDependency.getDependencyDefinition() + "\"");
 			}
 			if (!isLastItem(dependency, dependencies)) {

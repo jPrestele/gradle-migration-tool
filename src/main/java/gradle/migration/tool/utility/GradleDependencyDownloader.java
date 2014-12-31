@@ -1,7 +1,7 @@
 package gradle.migration.tool.utility;
 
+import gradle.migration.tool.dependencies.GradleDependency;
 import gradle.migration.tool.workspace.Dependency;
-import gradle.migration.tool.workspace.RemoteGradleDependency;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,8 +56,8 @@ public class GradleDependencyDownloader {
 	 */
 	private void searchAndSetDependencyJars() {
 		for (Dependency dependency : dependencies) {
-			if (dependency instanceof RemoteGradleDependency) {
-				RemoteGradleDependency gradleDependency = (RemoteGradleDependency) dependency;
+			if (dependency instanceof GradleDependency) {
+				GradleDependency gradleDependency = (GradleDependency) dependency;
 				try {
 					File jar = FileUtils.listFiles(gradleDependenciesCache, FileFilterUtils.nameFileFilter(gradleDependency.getJarFileName()), TrueFileFilter.INSTANCE).iterator().next();
 					dependency.setJar(new JarFile(jar));
@@ -78,8 +78,8 @@ public class GradleDependencyDownloader {
 	private void appendDependencyEntries() {
 		tempGradleBuildFile.append("dependencies { ");
 		for (Dependency dependency : dependencies) {
-			if (dependency instanceof RemoteGradleDependency) {
-				RemoteGradleDependency gradleDependency = (RemoteGradleDependency) dependency;
+			if (dependency instanceof GradleDependency) {
+				GradleDependency gradleDependency = (GradleDependency) dependency;
 				tempGradleBuildFile.append("compile '" + gradleDependency.getDependencyDefinition() + "'");
 				tempGradleBuildFile.newLine();
 			}

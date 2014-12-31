@@ -4,56 +4,58 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class Project {
-	private File rootFile;
-	private String projectName;
+	private File file;
+	private String name;
 	private ArrayList<Package> packages;
 	private ArrayList<String> imports;
 	private ArrayList<String> exports;
 	private ArrayList<Project> projectDependencies;
-	private ArrayList<Dependency> fileDependencies;
+	private ArrayList<Dependency> dependencies;
 	private DependencyType dependencyType = DependencyType.COMPILE;
 
 	public Project(File rootFolder) {
-		this.rootFile = rootFolder;
-		projectName = rootFolder.getName();
+		this.file = rootFolder;
+		name = rootFolder.getName();
 		packages = new ArrayList<Package>();
 		projectDependencies = new ArrayList<Project>();
-		fileDependencies = new ArrayList<Dependency>();
-		populatePackages(rootFile);
+		dependencies = new ArrayList<Dependency>();
+		populatePackages(file);
 		populateImports();
 		populateExports();
+	}
+
+	public File getFile() {
+		return file;
+	}
+
+	public String getName() {
+		return name;
 	}
 
 	public ArrayList<Package> getPackages() {
 		return packages;
 	}
 
-	public File getFile() {
-		return rootFile;
-	}
-
-	public String getFilePath() {
-		return rootFile.getAbsolutePath();
-	}
-
+	/*
+	 * returns all java import statements made in this project
+	 */
 	public ArrayList<String> getImports() {
 		return imports;
 	}
 
-	public String getName() {
-		return projectName;
-	}
-
+	/*
+	 * returns all classes which are exported by this project
+	 */
 	public ArrayList<String> getExports() {
 		return exports;
 	}
 
-	public ArrayList<Project> getDependencies() {
+	public ArrayList<Project> getProjectDependencies() {
 		return projectDependencies;
 	}
 
-	public ArrayList<Dependency> getFileDependencies() {
-		return fileDependencies;
+	public ArrayList<Dependency> getDependencies() {
+		return dependencies;
 	}
 
 	public DependencyType getDependencyType() {
@@ -64,18 +66,15 @@ public class Project {
 		this.dependencyType = dependencyType;
 	}
 
-	public void addFileDependency(Dependency dependency) {
-		fileDependencies.add(dependency);
+	public void addDependency(Dependency dependency) {
+		dependencies.add(dependency);
 	}
 
-	/*
-	 * projectDependencies must be populated before they can be used;
-	 */
 	public void addProjectDependency(Project project) {
 		projectDependencies.add(project);
 	}
 
-	public void removeDependency(Project project) {
+	public void removeProjectDependency(Project project) {
 		projectDependencies.remove(project);
 	}
 
@@ -113,6 +112,6 @@ public class Project {
 
 	@Override
 	public String toString() {
-		return projectName;
+		return name;
 	}
 }

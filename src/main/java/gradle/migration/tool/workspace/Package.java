@@ -6,22 +6,22 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class Package {
-	private File packageFile;
+	private File file;
 	private String javaPackage;
 	private ArrayList<JavaFile> javaFiles;
 	private ArrayList<String> exports;
 	private ArrayList<String> imports;
 
-	public Package(File packageFile) {
-		this.packageFile = packageFile;
+	public Package(File folder) {
+		this.file = folder;
 		populateJavaFiles();
-		createJavaPackageName();
+		findJavaPackageName();
 		populateExports();
 		populateImports();
 	}
 
-	public File getPackageFile() {
-		return packageFile;
+	public File getFile() {
+		return file;
 	}
 
 	public String getJavaPackageName() {
@@ -42,15 +42,15 @@ public class Package {
 
 	private void populateJavaFiles() {
 		javaFiles = new ArrayList<JavaFile>();
-		for (File subFile : packageFile.listFiles()) {
+		for (File subFile : file.listFiles()) {
 			if (subFile.isFile() && subFile.getName().endsWith(".java")) {
 				javaFiles.add(new JavaFile(subFile.getAbsolutePath()));
 			}
 		}
 	}
 
-	private void createJavaPackageName() {
-		File firstJavaFileOfPackage = javaFiles.get(0);
+	private void findJavaPackageName() {
+		File firstJavaFileOfPackage = javaFiles.get(0).getFile();
 		FileReaderPattern fileReader = new FileReaderPattern(firstJavaFileOfPackage);
 		String firstLineJavaFile = fileReader.readLine();
 		if (!firstLineJavaFile.contains("package ")) {
@@ -69,7 +69,7 @@ public class Package {
 	private void populateExports() {
 		exports = new ArrayList<String>();
 		for (JavaFile javaFile : javaFiles) {
-			String className = javaFile.getName().replace(".java", "");
+			String className = javaFile.getFile().getName().replace(".java", "");
 			String export = javaPackage + '.' + className;
 			exports.add(export);
 		}
