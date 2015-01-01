@@ -8,14 +8,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-public class FileReaderPattern {
+public class PatternFileReader {
 	private File file;
-	private BufferedReader buffRead;
+	private BufferedReader reader;
 
-	public FileReaderPattern(File file) {
+	public PatternFileReader(File file) {
 		this.file = file;
 		try {
-			buffRead = new BufferedReader(new FileReader(file));
+			reader = new BufferedReader(new FileReader(file));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -24,13 +24,16 @@ public class FileReaderPattern {
 	public String readLine() {
 		String currentLine = "";
 		try {
-			currentLine = buffRead.readLine();
+			currentLine = reader.readLine();
 		} catch (IOException e) {
 			System.err.println("Could not read from " + file.getName());
 		}
 		return currentLine;
 	}
 
+	/*
+	 * Return first line to match regex or null
+	 */
 	public String getRegexMatch(String regex) {
 		String line = readLine();
 		while (line != null) {
@@ -40,10 +43,6 @@ public class FileReaderPattern {
 			line = readLine();
 		}
 		return null;
-	}
-
-	public ArrayList<String> getMatchesTillStopCondition(String matchRegex) {
-		return getMatchesUntilStopMatch(matchRegex, "");
 	}
 
 	public ArrayList<String> getMatchesUntilStopMatch(String matchRegex, String stopRegex) {

@@ -1,6 +1,6 @@
 package gradle.migration.tool.workspace;
 
-import gradle.migration.tool.workspace.utility.FileReaderPattern;
+import gradle.migration.tool.workspace.utility.PatternFileReader;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ public class Package {
 
 	private void findJavaPackageName() {
 		File firstJavaFileOfPackage = javaFiles.get(0).getFile();
-		FileReaderPattern fileReader = new FileReaderPattern(firstJavaFileOfPackage);
+		PatternFileReader fileReader = new PatternFileReader(firstJavaFileOfPackage);
 		String firstLineJavaFile = fileReader.readLine();
 		if (!firstLineJavaFile.contains("package ")) {
 			javaPackage = "";

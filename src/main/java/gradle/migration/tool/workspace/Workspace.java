@@ -3,6 +3,7 @@ package gradle.migration.tool.workspace;
 import gradle.migration.tool.dependencies.GradleDependency;
 import gradle.migration.tool.gradle.file.creation.GradleFilesCreator;
 import gradle.migration.tool.utility.GradleDependencyDownloader;
+import gradle.migration.tool.workspace.utility.WorkspacePrinter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -47,14 +48,14 @@ public class Workspace {
 		}
 	}
 
+	public void addDependency(Dependency dependency) {
+		dependencies.add(dependency);
+	}
+
 	public void addDependencies(ArrayList<Dependency> dependencies) {
 		for (Dependency dependency : dependencies) {
 			this.dependencies.add(dependency);
 		}
-	}
-
-	public void addDependency(Dependency dependency) {
-		dependencies.add(dependency);
 	}
 
 	public void removeProjects(String... projects) {
@@ -80,18 +81,16 @@ public class Workspace {
 
 	private void makeDependenciesTransitive() {
 		// go to projects on which current project depend. If they have
-		// the same dependencies as the parent project remove them in
+		// the same dependencies as the current project remove them in
 		// currentProject
 		for (Project project : projects) {
 			ArrayList<Project> projectDependencies = project.getProjectDependencies();
 			ArrayList<Dependency> fileDependencies = project.getDependencies();
 			ArrayList<Project> dependenciesIterateCopy = new ArrayList<Project>(projectDependencies);
 			for (Project dependencyProject : dependenciesIterateCopy) {
-				// remove duplicate projects
 				for (Project dependencyProjectDependency : dependencyProject.getProjectDependencies()) {
 					projectDependencies.remove(dependencyProjectDependency);
 				}
-				// remove duplicate fileDependencies
 				for (Dependency dependencyProjectFileDependency : dependencyProject.getDependencies()) {
 					fileDependencies.remove(dependencyProjectFileDependency);
 				}

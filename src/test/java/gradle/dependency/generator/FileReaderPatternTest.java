@@ -1,7 +1,7 @@
 package gradle.dependency.generator;
 
 import static org.junit.Assert.*;
-import gradle.migration.tool.workspace.utility.FileReaderPattern;
+import gradle.migration.tool.workspace.utility.PatternFileReader;
 
 import java.io.File;
 import java.util.LinkedList;
@@ -10,12 +10,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class FileReaderPatternTest {
-	FileReaderPattern fileReader;
+	PatternFileReader fileReader;
 
 	@Before
 	public void initialize() {
 		File testClass = new File("C:\\Program Files\\eclipse\\workspace\\gradle-dependency-generator\\src\\test\\resources\\project-test\\project\\test1\\Class1.java");
-		fileReader = new FileReaderPattern(testClass);
+		fileReader = new PatternFileReader(testClass);
 	}
 
 	@Test

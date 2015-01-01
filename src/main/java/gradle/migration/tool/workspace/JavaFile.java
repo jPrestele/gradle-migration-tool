@@ -1,6 +1,6 @@
 package gradle.migration.tool.workspace;
 
-import gradle.migration.tool.workspace.utility.FileReaderPattern;
+import gradle.migration.tool.workspace.utility.PatternFileReader;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class JavaFile {
 	}
 
 	private void populateImports() {
-		FileReaderPattern fileReader = new FileReaderPattern(file);
+		PatternFileReader fileReader = new PatternFileReader(file);
 		imports = fileReader.getMatchesUntilStopMatch(".*import .*;", ".*public (class|interface|enum).*");
 		normalizeImports();
 	}

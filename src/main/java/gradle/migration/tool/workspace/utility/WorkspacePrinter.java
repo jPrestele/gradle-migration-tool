@@ -1,4 +1,8 @@
-package gradle.migration.tool.workspace;
+package gradle.migration.tool.workspace.utility;
+
+import gradle.migration.tool.workspace.Dependency;
+import gradle.migration.tool.workspace.Project;
+import gradle.migration.tool.workspace.Workspace;
 
 import java.util.ArrayList;
 
