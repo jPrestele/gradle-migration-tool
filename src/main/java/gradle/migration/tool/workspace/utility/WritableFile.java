@@ -1,54 +1,44 @@
-package gradle.migration.tool.utility;
+package gradle.migration.tool.workspace.utility;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-// TODO: use stringbuilder
 public class WritableFile extends File {
-	private static final long serialVersionUID = 1L;
-	private String fileOutput = "";
+	private StringBuilder output;
+
 	final static String newLine = System.lineSeparator();
+	private static final long serialVersionUID = 1L;
 
 	public WritableFile(String path) {
 		super(path);
+		output = new StringBuilder();
 	}
 
 	public WritableFile(File file) {
 		super(file.getAbsolutePath());
 	}
 
-	/*
-	 * returns object so multiple appens or newline can be used in one line
-	 */
 	public WritableFile append(String string) {
-		fileOutput += string;
+		output.append(string);
 		return this;
 	}
 
 	public WritableFile newLine() {
-		fileOutput += newLine;
+		output.append(newLine);
 		return this;
 	}
 
-	/*
-	 * should only be used if append function was used
-	 */
 	public void write() {
-		create(fileOutput);
-	}
-
-	public void create(String output) {
 		File file = super.getAbsoluteFile();
 		try {
 			BufferedWriter buffWrite = new BufferedWriter(new FileWriter(file));
-			buffWrite.write(output);
+			buffWrite.write(output.toString());
 			buffWrite.close();
 		} catch (IOException e) {
 			System.out.println("Could not write file : " + file);
 			e.printStackTrace();
 		}
 	}
-
 }

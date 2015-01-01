@@ -1,6 +1,6 @@
 package gradle.migration.tool.workspace;
 
-import gradle.migration.tool.utility.FileReaderPattern;
+import gradle.migration.tool.workspace.utility.FileReaderPattern;
 
 import java.io.File;
 import java.util.ArrayList;

@@ -1,10 +1,10 @@
 package gradle.migration.tool.gradle.file.creation;
 
 import gradle.migration.tool.dependencies.GradleDependency;
-import gradle.migration.tool.utility.WritableFile;
 import gradle.migration.tool.workspace.Dependency;
 import gradle.migration.tool.workspace.Project;
 import gradle.migration.tool.workspace.Workspace;
+import gradle.migration.tool.workspace.utility.WritableFile;
 
 import java.util.ArrayList;
 
@@ -26,7 +26,7 @@ public class GradleFilesCreator {
 				gradleBuildFile.append("dependencies {").newLine();
 				// Project dependency entries
 				for (Project projectDependency : projectDependencies) {
-					gradleBuildFile.append("\t" + projectDependency.getDependencyType().getType() + " project(':" + projectDependency.getName() + "')").newLine();
+					gradleBuildFile.append("\t" + projectDependency.getDependencyType().toString() + " project(':" + projectDependency.getName() + "')").newLine();
 				}
 				// only seperate project dependencies and file dependencies if
 				// both are present
@@ -37,7 +37,7 @@ public class GradleFilesCreator {
 					if (fileDependency instanceof GradleDependency) {
 						GradleDependency gradleDependency = (GradleDependency) fileDependency;
 						String dependencyEntry = deterimeDependencyEntry(gradleDependency);
-						gradleBuildFile.append("\t" + gradleDependency.getDependencyType().getType() + " " + dependencyEntry).newLine();
+						gradleBuildFile.append("\t" + gradleDependency.getDependencyType().toString() + " " + dependencyEntry).newLine();
 					}
 				}
 				gradleBuildFile.append("}");

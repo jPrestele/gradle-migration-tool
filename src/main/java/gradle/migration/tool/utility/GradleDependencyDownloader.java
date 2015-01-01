@@ -2,6 +2,7 @@ package gradle.migration.tool.utility;
 
 import gradle.migration.tool.dependencies.GradleDependency;
 import gradle.migration.tool.workspace.Dependency;
+import gradle.migration.tool.workspace.utility.WritableFile;
 
 import java.io.File;
 import java.io.IOException;

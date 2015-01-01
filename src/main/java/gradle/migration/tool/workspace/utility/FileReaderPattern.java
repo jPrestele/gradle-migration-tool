@@ -1,4 +1,4 @@
-package gradle.migration.tool.utility;
+package gradle.migration.tool.workspace.utility;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -43,10 +43,10 @@ public class FileReaderPattern {
 	}
 
 	public ArrayList<String> getMatchesTillStopCondition(String matchRegex) {
-		return getMatchesTillStopCondition(matchRegex, "");
+		return getMatchesUntilStopMatch(matchRegex, "");
 	}
 
-	public ArrayList<String> getMatchesTillStopCondition(String matchRegex, String stopRegex) {
+	public ArrayList<String> getMatchesUntilStopMatch(String matchRegex, String stopRegex) {
 		ArrayList<String> matches = new ArrayList<String>();
 		String currentLine = getRegexMatch(matchRegex);
 		while (currentLine != null) {

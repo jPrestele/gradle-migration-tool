@@ -1,7 +1,7 @@
 package gradle.dependency.generator;
 
 import static org.junit.Assert.*;
-import gradle.migration.tool.utility.FileReaderPattern;
+import gradle.migration.tool.workspace.utility.FileReaderPattern;
 
 import java.io.File;
 import java.util.LinkedList;
@@ -31,6 +31,6 @@ public class FileReaderPatternTest {
 		expectedList.add("import irgendwas.zum.testen;");
 		expectedList.add("import nochmal.irgendwas.zum.testen;");
 
-		assertEquals(expectedList, fileReader.getMatchesTillStopCondition("import.*", ".*public class.*"));
+		assertEquals(expectedList, fileReader.getMatchesUntilStopMatch("import.*", ".*public class.*"));
 	}
 }

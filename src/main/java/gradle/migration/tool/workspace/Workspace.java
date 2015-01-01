@@ -39,7 +39,7 @@ public class Workspace {
 		transitiveDependencies = transitive;
 	}
 
-	public void configurationsFinished() {
+	public void constructDependencyModel() {
 		populateProjectDependencies();
 		populateProjectFileDependencies();
 		if (transitiveDependencies) {
@@ -47,7 +47,7 @@ public class Workspace {
 		}
 	}
 
-	public void addDependency(ArrayList<Dependency> dependencies) {
+	public void addDependencies(ArrayList<Dependency> dependencies) {
 		for (Dependency dependency : dependencies) {
 			this.dependencies.add(dependency);
 		}
@@ -154,7 +154,7 @@ public class Workspace {
 
 		ArrayList<Dependency> dependencies = new ArrayList<Dependency>();
 		GradleDependency junit = new GradleDependency("junit:junit:4.10");
-		junit.setDependencyType(DependencyType.COMPILE);
+		junit.setDependencyType(DependencyType.TESTCOMPILE);
 		dependencies.add(junit);
 		dependencies.add(new GradleDependency("org.apache.commons:commons-lang3:3.3.2"));
 		dependencies.add(new GradleDependency("org.apache.httpcomponents:httpclient:4.3.6"));
@@ -163,7 +163,8 @@ public class Workspace {
 		downloader.addDependencies(dependencies);
 		downloader.downloadDependencies();
 
-		workspace.configurationsFinished();
+		workspace.addDependencies(dependencies);
+		workspace.constructDependencyModel();
 
 		WorkspacePrinter printer = new WorkspacePrinter(workspace);
 		printer.printDependencyMatrix();

@@ -1,6 +1,6 @@
 package gradle.migration.tool.workspace;
 
-import gradle.migration.tool.utility.FileReaderPattern;
+import gradle.migration.tool.workspace.utility.FileReaderPattern;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,17 +25,17 @@ public class JavaFile {
 
 	private void populateImports() {
 		FileReaderPattern fileReader = new FileReaderPattern(file);
-		imports = fileReader.getMatchesTillStopCondition(".*import .*;", ".*public (class|interface|enum).*");
+		imports = fileReader.getMatchesUntilStopMatch(".*import .*;", ".*public (class|interface|enum).*");
 		normalizeImports();
 	}
 
 	private void normalizeImports() {
-		for (int i = 0; i < imports.size(); i++) {
-			String impStatem = imports.get(i);
-			impStatem = impStatem.trim();
-			// .* replacement adds the package name as import
-			impStatem = removeAllOccurences(impStatem, "import ", ";", "static", ".*");
-			imports.set(i, impStatem);
+		int index = 0;
+		for (String imp : imports) {
+			imp = imp.trim();
+			imp = removeAllOccurences(imp, "import ", ";", "static", ".*");
+			imports.set(index, imp);
+			index++;
 		}
 	}
 

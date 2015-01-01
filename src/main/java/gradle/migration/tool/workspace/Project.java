@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 public class Project {
 	private File file;
-	private String name;
 	private ArrayList<Package> packages;
 	private ArrayList<String> imports;
 	private ArrayList<String> exports;
@@ -15,7 +14,6 @@ public class Project {
 
 	public Project(File rootFolder) {
 		this.file = rootFolder;
-		name = rootFolder.getName();
 		packages = new ArrayList<Package>();
 		projectDependencies = new ArrayList<Project>();
 		dependencies = new ArrayList<Dependency>();
@@ -29,7 +27,7 @@ public class Project {
 	}
 
 	public String getName() {
-		return name;
+		return file.getName();
 	}
 
 	public ArrayList<Package> getPackages() {
@@ -112,6 +110,6 @@ public class Project {
 
 	@Override
 	public String toString() {
-		return name;
+		return file.getName();
 	}
 }
